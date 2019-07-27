@@ -20,11 +20,11 @@ before_install:
 
 install:
   - brew install advancecomp
-  - brew tap kleisauke/package-libvips-darwin https://github.com/kleisauke/package-libvips-darwin.git
-  - brew install kleisauke/package-libvips-darwin/libtiff --build-bottle
-  - brew install kleisauke/package-libvips-darwin/gdk-pixbuf --build-bottle
-  - brew postinstall kleisauke/package-libvips-darwin/gdk-pixbuf
-  - brew install kleisauke/package-libvips-darwin/vips --build-bottle
+  - brew tap lovell/package-libvips-darwin https://github.com/lovell/package-libvips-darwin.git
+  - brew install lovell/package-libvips-darwin/libtiff --build-bottle
+  - brew install lovell/package-libvips-darwin/gdk-pixbuf --build-bottle
+  - brew postinstall lovell/package-libvips-darwin/gdk-pixbuf
+  - brew install lovell/package-libvips-darwin/vips --build-bottle
 
 script:
   - export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/usr/local/opt/libffi/lib/pkgconfig:/usr/local/opt/jpeg-turbo/lib/pkgconfig"

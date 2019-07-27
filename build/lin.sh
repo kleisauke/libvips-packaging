@@ -264,7 +264,6 @@ mkdir ${DEPS}/svg
 curl -Lks https://download.gnome.org/sources/librsvg/$(without_patch $VERSION_SVG)/librsvg-${VERSION_SVG}.tar.xz | tar xJC ${DEPS}/svg --strip-components=1
 cd ${DEPS}/svg
 git apply -v /packaging/build/librsvg-2-fixes.patch
-autoreconf -fiv
 # Optimise Rust code for binary size
 sed -i "s/debug = true/debug = false\ncodegen-units = 1\nincremental = false\npanic = \"abort\"\nopt-level = ${RUST_OPT_LEVEL:-\"s\"}/" Cargo.toml
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking \
