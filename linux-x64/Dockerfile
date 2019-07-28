@@ -19,6 +19,7 @@ RUN \
     gtk-doc \
     jq \
     nasm \
+    prelink \
   && curl https://sh.rustup.rs -sSf | sh -s -- -y \
   && ln -s /usr/bin/cmake3 /usr/bin/cmake
 

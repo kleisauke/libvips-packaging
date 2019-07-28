@@ -154,7 +154,6 @@ make install-strip
 mkdir ${DEPS}/jpeg
 curl -Ls https://github.com/libjpeg-turbo/libjpeg-turbo/archive/${VERSION_JPEG}.tar.gz | tar xzC ${DEPS}/jpeg --strip-components=1
 cd ${DEPS}/jpeg
-sed -i "s/cmake_minimum_required(VERSION 2.8.12)/cmake_minimum_required(VERSION 2.8.11)/" CMakeLists.txt
 cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/root/Toolchain.cmake -DCMAKE_INSTALL_PREFIX=${TARGET} -DCMAKE_INSTALL_LIBDIR=${TARGET}/lib \
   -DENABLE_SHARED=TRUE -DENABLE_STATIC=FALSE -DWITH_JPEG8=1 -DWITH_TURBOJPEG=FALSE
 make install/strip
