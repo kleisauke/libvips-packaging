@@ -41,7 +41,7 @@ function copydeps {
   done < <(otool -LX $file | awk '{print $1}' | grep '/usr/local')
 }
 
-copydeps $(brew --prefix vips)/lib/libvips.42.dylib lib
+copydeps $(brew --prefix vips8)/lib/libvips.42.dylib lib
 
 # Fix file permissions
 chmod 644 include/*.h

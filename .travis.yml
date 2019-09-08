@@ -6,25 +6,33 @@ osx_image: xcode9.2
 env:
   global:
     - COLUMNS=240
+    - PKG_CONFIG_PATH=/usr/local/opt/libffi/lib/pkgconfig:/usr/local/opt/jpeg-turbo/lib/pkgconfig:$PKG_CONFIG_PATH
+    - HOMEBREW_NO_AUTO_UPDATE=1
+    - HOMEBREW_NO_INSTALL_CLEANUP=1
 
 before_install:
   - brew cleanup
-  - brew uninstall boost carthage cgal dirmngr freexl gdal go libgeotiff liblwgeom libspatialite libtiff maven mercurial postgis postgresql python sfcgal swiftlint
+  # Remove pre-installed Travis packages
+  # See: https://github.com/travis-ci/packer-templates-mac/blob/master/playbooks/roles/homebrew/defaults/main.yml
+  - brew uninstall boost carthage cgal dirmngr freexl gdal geos gnupg go icu4c jpeg json-c libgeotiff liblwgeom libspatialite libtiff maven md5deep mercurial msgpack node postgis postgresql pyenv python sfcgal sqlite swiftlint xctool
   - brew update
   - brew upgrade
-  - brew cleanup
 
 install:
   - brew install advancecomp
-  - brew tap lovell/package-libvips-darwin https://github.com/lovell/package-libvips-darwin.git
-  - brew install lovell/package-libvips-darwin/libtiff --build-bottle
-  - brew install lovell/package-libvips-darwin/gdk-pixbuf --build-bottle
-  - brew postinstall lovell/package-libvips-darwin/gdk-pixbuf
-  - brew install lovell/package-libvips-darwin/vips --build-bottle
+  - brew tap kleisauke/libvips
+  - brew install vips8 --build-bottle -v
 
 script:
-  - export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/usr/local/opt/libffi/lib/pkgconfig:/usr/local/opt/jpeg-turbo/lib/pkgconfig"
   - ./build/osx.sh
+
+before_cache:
+  - brew cleanup
+
+cache:
+  directories:
+    # Cache downloaded bottles
+    - $HOME/Library/Caches/Homebrew
 
 addons:
   artifacts:
