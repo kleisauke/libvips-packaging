@@ -202,6 +202,9 @@ mkdir ${DEPS}/gdkpixbuf
 curl -Lks https://download.gnome.org/sources/gdk-pixbuf/$(without_patch $VERSION_GDKPIXBUF)/gdk-pixbuf-${VERSION_GDKPIXBUF}.tar.xz | tar xJC ${DEPS}/gdkpixbuf --strip-components=1
 cd ${DEPS}/gdkpixbuf
 sed -i "/subdir('tests')/,+1d" meson.build
+# Ensure meson can find libjpeg when cross-compiling
+sed -i "s/has_header('jpeglib.h')/has_header('jpeglib.h', args: '-I\/target\/include')/" meson.build
+sed -i "s/find_library('jpeg',/find_library('jpeg', dirs: '\/target\/lib',/" meson.build
 LDFLAGS=${LDFLAGS/\$/} meson setup _build --buildtype=release --strip --libdir=lib --prefix=${TARGET} \
   -Dtiff=false -Dx11=false -Dgir=false -Dinstalled_tests=false -Dgio_sniffing=false -Dman=false -Dbuiltin_loaders=png,jpeg
 ninja -C _build
