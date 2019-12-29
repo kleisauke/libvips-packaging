@@ -9,23 +9,25 @@ env:
     - PKG_CONFIG_PATH="/usr/local/opt/libffi/lib/pkgconfig:/usr/local/opt/jpeg-turbo/lib/pkgconfig:$PKG_CONFIG_PATH"
     - HOMEBREW_NO_AUTO_UPDATE=1
     - HOMEBREW_NO_INSTALL_CLEANUP=1
-    - KEEP_PACKAGES="cmake gdbm gettext giflib git jpeg libffi libpng libtiff libxml2 little-cms2 openssl openssl@1.1 pcre pkg-config python readline sqlite xz"
+    - KEEP_PACKAGES="pkg-config gnupg"
 
 before_install:
+  - brew tap lovell/package-libvips-darwin https://github.com/lovell/package-libvips-darwin.git
   - brew cleanup
-  # Remove pre-installed Travis packages
-  # See: https://github.com/travis-ci/packer-templates-mac/blob/master/playbooks/roles/homebrew/defaults/main.yml
-  - brew list -1 | grep -Ev ${KEEP_PACKAGES// /|} | xargs brew rm
+  # Remove unused formulae to speed upgrade
+  - KEEP_DEPENDENCIES=$(brew deps --installed lovell/package-libvips-darwin/vips | grep -Ev "${KEEP_PACKAGES// /|}")
+  - brew list -1 | grep -Ev ${KEEP_DEPENDENCIES//$'\n'/|} | xargs brew rm
+  # python2 conflicts with python3
+  - brew unlink python@2
   - brew update
   - brew upgrade
 
 install:
   - brew install advancecomp
-  - brew tap lovell/package-libvips-darwin https://github.com/lovell/package-libvips-darwin.git
-  - brew install lovell/package-libvips-darwin/libtiff --build-bottle
-  - brew install lovell/package-libvips-darwin/gdk-pixbuf --build-bottle
-  - brew postinstall lovell/package-libvips-darwin/gdk-pixbuf
-  - brew install lovell/package-libvips-darwin/vips --build-bottle
+  # Need to reinstall libtiff and gdk-pixbuf for libjpeg-turbo support
+  - brew reinstall --build-from-source lovell/package-libvips-darwin/libtiff
+  - brew reinstall --build-from-source lovell/package-libvips-darwin/gdk-pixbuf
+  - brew install --build-bottle lovell/package-libvips-darwin/vips
 
 script:
   - ./build/osx.sh
