@@ -12,11 +12,11 @@ env:
 
 before_install:
   - brew tap lovell/package-libvips-darwin https://github.com/lovell/package-libvips-darwin.git
+  - KEEP_DEPENDENCIES=$(brew deps --include-build --installed lovell/package-libvips-darwin/vips)
+  - echo "$KEEP_DEPENDENCIES"
   - brew update
   - brew cleanup
   # Remove unused formulae to speed upgrade
-  - KEEP_DEPENDENCIES=$(brew deps --include-build --installed lovell/package-libvips-darwin/vips)
-  - echo "$KEEP_DEPENDENCIES"
   - brew list -1 | grep -Ev ${KEEP_DEPENDENCIES//$'\n'/|} | xargs brew rm -f
   - brew upgrade
 
