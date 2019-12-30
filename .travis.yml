@@ -12,7 +12,7 @@ env:
 
 before_install:
   - brew tap lovell/package-libvips-darwin https://github.com/lovell/package-libvips-darwin.git
-  - KEEP_DEPENDENCIES=$(brew deps --include-build --installed lovell/package-libvips-darwin/vips)
+  - KEEP_DEPENDENCIES=$(brew deps --include-build lovell/package-libvips-darwin/vips)
   - echo "$KEEP_DEPENDENCIES"
   - brew update
   - brew cleanup
