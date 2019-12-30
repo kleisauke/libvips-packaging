@@ -16,6 +16,7 @@ before_install:
   - brew cleanup
   # Remove unused formulae to speed upgrade
   - KEEP_DEPENDENCIES=$(brew deps --installed lovell/package-libvips-darwin/vips | grep -Ev "${KEEP_PACKAGES// /|}")
+  - echo $KEEP_DEPENDENCIES
   - brew list -1 | grep -Ev ${KEEP_DEPENDENCIES//$'\n'/|} | xargs brew rm
   # python2 conflicts with python3
   - brew unlink python@2
