@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -e
 
 # Working directories
@@ -19,7 +19,7 @@ export CXXFLAGS="${FLAGS}"
 # Dependency version numbers
 VERSION_ZLIB=1.2.11
 VERSION_FFI=3.3
-VERSION_GLIB=2.63.3
+VERSION_GLIB=2.63.4
 VERSION_XML2=2.9.10
 VERSION_GSF=1.14.46
 VERSION_EXIF=0.6.21
@@ -39,7 +39,7 @@ VERSION_PIXMAN=0.38.4
 VERSION_CAIRO=1.16.0
 VERSION_FRIBIDI=1.0.8
 VERSION_PANGO=1.44.7
-VERSION_SVG=2.47.1
+VERSION_SVG=2.47.2
 VERSION_GIF=5.1.4
 
 # Remove patch version component
@@ -285,7 +285,26 @@ cd ${TARGET}/lib
 rm -rf pkgconfig .libs *.la libvipsCC* cmake
 
 # Set RPATH to $ORIGIN
-find ${TARGET}/lib -type f -name "*.so*" -exec sh -c "patchelf --set-rpath '\$ORIGIN' --force-rpath {}" \;
+patchelf --set-rpath '$ORIGIN' --force-rpath libvips-cpp.so.42
+
+# Change the SONAME of libvips to ensure the dynamic linker will attempt to load the latest version.
+# See: https://github.com/lovell/sharp/issues/2046
+if [ -n "${SONAME_MAJOR_VIPS}" ]; then
+  patchelf --set-soname "libvips-cpp.so.${SONAME_MAJOR_VIPS}" libvips-cpp.so.42
+  patchelf --set-soname "libvips.so.${SONAME_MAJOR_VIPS}" libvips.so.42
+fi
+
+# Pack only the relevant libraries
+mkdir ${TARGET}/lib-filterd
+cp -L libvips-cpp.so.42 ${TARGET}/lib-filterd
+
+while read IN; do
+  cp -L $IN ${TARGET}/lib-filterd/$IN
+  echo ${TARGET}/lib-filterd/$IN
+
+  # Set RPATH to $ORIGIN
+  patchelf --set-rpath '$ORIGIN' --force-rpath ${TARGET}/lib-filterd/$IN
+done < <(ldd libvips-cpp.so.42 | grep ${TARGET}/lib | cut -d '=' -f1 | awk '{print $1}')
 
 # Create JSON file of version numbers
 cd ${TARGET}
@@ -323,6 +342,8 @@ printf "\"${PLATFORM}\"" >platform.json
 curl -Os https://raw.githubusercontent.com/lovell/sharp-libvips/master/THIRD-PARTY-NOTICES.md
 
 # Create .tar.gz
+rm -rf lib
+mv lib-filterd lib
 tar czf /packaging/libvips-${VERSION_VIPS}-${PLATFORM}.tar.gz \
   include \
   lib \

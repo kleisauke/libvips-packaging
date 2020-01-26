@@ -3,10 +3,10 @@ set -e
 
 if [ $# -lt 1 ]; then
   echo
-  echo "Usage: $0 VERSION [PLATFORM]"
+  echo "Usage: $0 VERSION [PLATFORM] [SONAME_MAJOR]"
   echo "Build shared libraries for libvips and its dependencies via containers"
   echo
-  echo "Please specify the libvips VERSION, e.g. 8.7.0"
+  echo "Please specify the libvips VERSION, e.g. 8.9.0"
   echo
   echo "Optionally build for only one PLATFORM, defaults to building for all"
   echo
@@ -22,6 +22,7 @@ if [ $# -lt 1 ]; then
 fi
 VERSION_VIPS="$1"
 PLATFORM="${2:-all}"
+SONAME_MAJOR_VIPS="$3"
 
 # Is docker available?
 if ! type docker >/dev/null; then
@@ -46,7 +47,7 @@ for flavour in linux-x64 linuxmusl-x64 linux-armv6 linux-armv7 linux-arm64v8; do
   if [ $PLATFORM = "all" ] || [ $PLATFORM = $flavour ]; then
     echo "Building $flavour..."
     docker build -t vips-dev-$flavour $flavour
-    docker run --rm -e "VERSION_VIPS=${VERSION_VIPS}" -v $PWD:/packaging vips-dev-$flavour sh -c "/packaging/build/lin.sh"
+    docker run --rm -e "VERSION_VIPS=${VERSION_VIPS}" -e "SONAME_MAJOR_VIPS=${SONAME_MAJOR_VIPS}" -v $PWD:/packaging vips-dev-$flavour sh -c "/packaging/build/lin.sh"
   fi
 done
 
