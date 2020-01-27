@@ -287,11 +287,21 @@ cd ${TARGET}/lib
 mkdir ${TARGET}/lib-filterd
 mv glib-2.0 ${TARGET}/lib-filterd
 
+VIPS_DEP=libvips.so.42
+VIPS_CPP_DEP=libvips-cpp.so.42
+
 # Change the SONAME of libvips to ensure the dynamic linker will attempt to load the latest version.
 # See: https://github.com/lovell/sharp/issues/2046
 if [ -n "${SONAME_MAJOR_VIPS}" ]; then
-  patchelf --set-soname "libvips-cpp.so.${SONAME_MAJOR_VIPS}" libvips-cpp.so.42
-  patchelf --set-soname "libvips.so.${SONAME_MAJOR_VIPS}" libvips.so.42
+  mv $VIPS_DEP libvips.so.${SONAME_MAJOR_VIPS}
+  mv $VIPS_CPP_DEP libvips-cpp.so.${SONAME_MAJOR_VIPS}
+
+  VIPS_DEP=libvips.so.${SONAME_MAJOR_VIPS}
+  VIPS_CPP_DEP=libvips-cpp.so.${SONAME_MAJOR_VIPS}
+
+  patchelf --set-soname $VIPS_DEP $VIPS_DEP
+  patchelf --set-soname $VIPS_CPP_DEP $VIPS_CPP_DEP
+  patchelf --replace-needed libvips.so.42 $VIPS_DEP $VIPS_CPP_DEP
 fi
 
 # Pack only the relevant shared libraries
@@ -316,7 +326,14 @@ function copydeps {
   done;
 }
 
-copydeps libvips-cpp.so.42 ${TARGET}/lib-filterd
+copydeps $VIPS_CPP_DEP ${TARGET}/lib-filterd
+
+# musl doesn't explicitly link to libgthread, although we still
+# need this dependency for backward compatibility reasons
+case ${PLATFORM} in *musl*)
+  cp -L libgthread-2.0.so.0 ${TARGET}/lib-filterd/libgthread-2.0.so.0
+  patchelf --set-rpath "\$ORIGIN/${VERSION_VIPS}/lib" --force-rpath ${TARGET}/lib-filterd/libgthread-2.0.so.0
+esac
 
 # Create JSON file of version numbers
 cd ${TARGET}
