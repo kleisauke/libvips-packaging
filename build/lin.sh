@@ -290,7 +290,7 @@ mv glib-2.0 ${TARGET}/lib-filterd
 VIPS_DEP=libvips.so.42
 VIPS_CPP_DEP=libvips-cpp.so.42
 
-# Change the SONAME of libvips to ensure the dynamic linker will attempt to load the latest version.
+# Change the SONAME of libvips to ensure the dynamic linker will attempt to load the latest version
 # See: https://github.com/lovell/sharp/issues/2046
 if [ -n "${SONAME_MAJOR_VIPS}" ]; then
   mv $VIPS_DEP libvips.so.${SONAME_MAJOR_VIPS}
@@ -305,14 +305,14 @@ if [ -n "${SONAME_MAJOR_VIPS}" ]; then
 fi
 
 # Pack only the relevant shared libraries
-# and set RPATH to $ORIGIN/$VERSION_VIPS/lib for all dependencies
+# and set RPATH to $ORIGIN for all dependencies
 # Note: we can't use ldd, since that can only be executed on the target machine
 function copydeps {
   local base=$1
   local dest_dir=$2
 
   cp -L $base $dest_dir/$base
-  patchelf --set-rpath "\$ORIGIN/${VERSION_VIPS}/lib" --force-rpath $dest_dir/$base
+  patchelf --set-rpath '$ORIGIN' --force-rpath $dest_dir/$base
 
   for dep in $(readelf -d $base | grep NEEDED | awk '{ print $5 }' | tr -d '[]'); do
     [ -f "${TARGET}/lib/$dep" ] || continue
@@ -332,7 +332,7 @@ copydeps $VIPS_CPP_DEP ${TARGET}/lib-filterd
 # need this dependency for backward compatibility reasons
 case ${PLATFORM} in *musl*)
   cp -L libgthread-2.0.so.0 ${TARGET}/lib-filterd/libgthread-2.0.so.0
-  patchelf --set-rpath "\$ORIGIN/${VERSION_VIPS}/lib" --force-rpath ${TARGET}/lib-filterd/libgthread-2.0.so.0
+  patchelf --set-rpath '$ORIGIN' --force-rpath ${TARGET}/lib-filterd/libgthread-2.0.so.0
 esac
 
 # Create JSON file of version numbers
