@@ -279,13 +279,13 @@ cd ${DEPS}/vips
 make install-strip
 
 # Remove the old C++ bindings
-cd ${TARGET}/include
-rm -rf vips/vipsc++.h vips/vipscpp.h
-cd ${TARGET}/lib
-rm -rf pkgconfig .libs *.la libvipsCC* cmake
+rm -rf ${TARGET}/include/vips/{vipsc++.h,vipscpp.h}
+rm -rf ${TARGET}/lib/{pkgconfig,.libs,*.la,libvipsCC*,cmake}
 
-# Set RPATH to $ORIGIN
-patchelf --set-rpath '$ORIGIN' --force-rpath libvips-cpp.so.42
+cd ${TARGET}/lib
+
+mkdir ${TARGET}/lib-filterd
+mv glib-2.0 ${TARGET}/lib-filterd
 
 # Change the SONAME of libvips to ensure the dynamic linker will attempt to load the latest version.
 # See: https://github.com/lovell/sharp/issues/2046
@@ -294,17 +294,29 @@ if [ -n "${SONAME_MAJOR_VIPS}" ]; then
   patchelf --set-soname "libvips.so.${SONAME_MAJOR_VIPS}" libvips.so.42
 fi
 
-# Pack only the relevant libraries
-mkdir ${TARGET}/lib-filterd
-cp -L libvips-cpp.so.42 ${TARGET}/lib-filterd
+# Pack only the relevant shared libraries
+# and set RPATH to $ORIGIN/$VERSION_VIPS/lib for all dependencies
+# Note: we can't use ldd, since that can only be executed on the target machine
+function copydeps {
+  local base=$1
+  local dest_dir=$2
 
-while read IN; do
-  cp -L $IN ${TARGET}/lib-filterd/$IN
-  echo ${TARGET}/lib-filterd/$IN
+  cp -L $base $dest_dir/$base
+  patchelf --set-rpath "\$ORIGIN/${VERSION_VIPS}/lib" --force-rpath $dest_dir/$base
 
-  # Set RPATH to $ORIGIN
-  patchelf --set-rpath '$ORIGIN' --force-rpath ${TARGET}/lib-filterd/$IN
-done < <(ldd libvips-cpp.so.42 | grep ${TARGET}/lib | cut -d '=' -f1 | awk '{print $1}')
+  for dep in $(readelf -d $base | grep NEEDED | awk '{ print $5 }' | tr -d '[]'); do
+    [ -f "${TARGET}/lib/$dep" ] || continue
+
+    echo "$base depends on $dep"
+
+    if [ ! -f "$dest_dir/$dep" ]; then
+      # Call this function (recursive) on each dependency of this library
+      copydeps $dep $dest_dir
+    fi
+  done;
+}
+
+copydeps libvips-cpp.so.42 ${TARGET}/lib-filterd
 
 # Create JSON file of version numbers
 cd ${TARGET}
