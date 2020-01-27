@@ -97,7 +97,7 @@ esac
 mkdir ${DEPS}/zlib
 curl -Ls https://zlib.net/zlib-${VERSION_ZLIB}.tar.xz | tar xJC ${DEPS}/zlib --strip-components=1
 cd ${DEPS}/zlib
-./configure --prefix=${TARGET} --uname=linux
+./configure --prefix=${TARGET} --uname=linux --shared
 make install
 rm ${TARGET}/lib/libz.a
 
