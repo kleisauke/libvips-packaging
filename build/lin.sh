@@ -87,11 +87,10 @@ if [ "$ALL_AT_VERSION_LATEST" = "false" ]; then exit 1; fi
 case ${PLATFORM} in *musl*)
   mkdir ${DEPS}/gettext
   curl -Ls https://ftp.gnu.org/pub/gnu/gettext/gettext-${VERSION_GETTEXT}.tar.xz | tar xJC ${DEPS}/gettext --strip-components=1
-  cd ${DEPS}/gettext
-  ./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking
+  cd ${DEPS}/gettext/gettext-runtime
+  ./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking \
+    --disable-libasprintf --disable-java --disable-native-java --disable-csharp
   make install-strip
-  rm ${TARGET}/include/gettext-po.h
-  rm -rf ${TARGET}/lib/*gettext*
   export LDFLAGS="$LDFLAGS -lintl"
 esac
 
