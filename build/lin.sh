@@ -104,8 +104,8 @@ rm ${TARGET}/lib/libz.a
 mkdir ${DEPS}/ffi
 curl -Ls https://sourceware.org/pub/libffi/libffi-${VERSION_FFI}.tar.gz | tar xzC ${DEPS}/ffi --strip-components=1
 cd ${DEPS}/ffi
-sed -i 's/@toolexeclibdir@/$(libdir)/g' Makefile.in
-./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking --disable-builddir
+./configure --host=${CHOST} --prefix=${TARGET} --libdir=${TARGET}/lib --enable-shared --disable-static --disable-dependency-tracking \
+  --disable-builddir --disable-multi-os-directory
 make install-strip
 
 mkdir ${DEPS}/glib
