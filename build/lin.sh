@@ -8,7 +8,7 @@ mkdir ${DEPS}
 mkdir ${TARGET}
 
 # Common build paths and flags
-export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${TARGET}/lib/pkgconfig"
+export PKG_CONFIG_PATH="${TARGET}/lib/pkgconfig"
 export PATH="${PATH}:${TARGET}/bin"
 export CPPFLAGS="-I${TARGET}/include"
 export LDFLAGS="-L${TARGET}/lib"
@@ -270,6 +270,7 @@ make install-strip
 mkdir ${DEPS}/vips
 curl -Ls https://github.com/libvips/libvips/releases/download/v${VERSION_VIPS}/vips-${VERSION_VIPS}.tar.gz | tar xzC ${DEPS}/vips --strip-components=1
 cd ${DEPS}/vips
+patch -p1 < /packaging/build/patches/vips-8-configure.patch && autoreconf -vi
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking \
   --disable-debug --disable-introspection --without-analyze --without-cfitsio --without-fftw --without-heif \
   --without-imagequant --without-magick --without-matio --without-nifti --without-OpenEXR --without-openslide \
@@ -327,13 +328,6 @@ function copydeps {
 }
 
 copydeps $VIPS_CPP_DEP ${TARGET}/lib-filterd
-
-# musl doesn't explicitly link to libgthread, although we still
-# need this dependency for backward compatibility reasons
-case ${PLATFORM} in *musl*)
-  cp -L libgthread-2.0.so.0 ${TARGET}/lib-filterd/libgthread-2.0.so.0
-  patchelf --set-rpath '$ORIGIN' --force-rpath ${TARGET}/lib-filterd/libgthread-2.0.so.0
-esac
 
 # Create JSON file of version numbers
 cd ${TARGET}

@@ -14,7 +14,8 @@ RUN \
     devtoolset-8-gcc \
     devtoolset-8-gcc-c++ \
     git \
-    glib-devel \
+    glib2-devel \
+    gobject-introspection-devel \
     gperf \
     gtk-doc \
     jq \
