@@ -1,0 +1,33 @@
+image: Visual Studio 2019
+
+platform:
+  - x64
+  - x86
+  - arm
+  - arm64
+
+environment:
+  VIPS_VERSION: "8.9.1"
+  PATH: 'C:\vips-dev-8.9\bin;%PATH%'
+
+install:
+  - ps: >-
+        If ($env:Platform -Match "x86") {
+          $env:DOWNLOAD_URI="https://github.com/libvips/build-win64-mxe/releases/download/v$env:VIPS_VERSION/vips-dev-w32-web-$env:VIPS_VERSION.zip"
+          $env:ARCHITECTURE="x86"
+        } ElseIf ($env:Platform -Match "arm64") {
+          $env:DOWNLOAD_URI="https://kleisauke.nl/vips-dev-arm64-web-$env:VIPS_VERSION-llvm.zip"
+          $env:ARCHITECTURE="aarch64"
+        } ElseIf ($env:Platform -Match "arm") {
+          $env:DOWNLOAD_URI="https://kleisauke.nl/vips-dev-arm32-web-$env:VIPS_VERSION-llvm.zip"
+          $env:ARCHITECTURE="arm"
+        } Else {
+          $env:DOWNLOAD_URI="https://github.com/libvips/build-win64-mxe/releases/download/v$env:VIPS_VERSION/vips-dev-w64-web-$env:VIPS_VERSION.zip"
+          $env:ARCHITECTURE="x64"
+        }
+  - 'appveyor DownloadFile %DOWNLOAD_URI% -FileName vips-binaries.zip'
+  - 7z x -oc:\ vips-binaries.zip
+
+build_script:
+  - vips.exe -v
+  - vips.exe -l
