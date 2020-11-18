@@ -92,7 +92,7 @@ VERSION_PNG16=1.6.37
 VERSION_SPNG=0.6.1
 VERSION_WEBP=1.1.0
 VERSION_TIFF=4.1.0
-VERSION_ORC=0.4.32
+VERSION_ORC=8d32f2d9
 VERSION_GETTEXT=0.21
 VERSION_GDKPIXBUF=2.42.0
 VERSION_FREETYPE=2.10.4
@@ -134,7 +134,7 @@ version_latest "png" "$VERSION_PNG16" "1705"
 version_latest "spng" "$VERSION_SPNG" "24289"
 version_latest "webp" "$VERSION_WEBP" "1761"
 version_latest "tiff" "$VERSION_TIFF" "13521"
-version_latest "orc" "$VERSION_ORC" "2573"
+#version_latest "orc" "$VERSION_ORC" "2573"
 version_latest "gettext" "$VERSION_GETTEXT" "898"
 version_latest "gdkpixbuf" "$VERSION_GDKPIXBUF" "9533"
 version_latest "freetype" "$VERSION_FREETYPE" "854"
@@ -274,7 +274,7 @@ if [ -n "${CHOST}" ]; then autoreconf -fiv; fi
 make install-strip
 
 mkdir ${DEPS}/orc
-$CURL https://gstreamer.freedesktop.org/data/src/orc/orc-${VERSION_ORC}.tar.xz | tar xJC ${DEPS}/orc --strip-components=1
+$CURL https://gitlab.freedesktop.org/api/v4/projects/1360/repository/archive?sha=${VERSION_ORC} | tar xzC ${DEPS}/orc --strip-components=1
 cd ${DEPS}/orc
 LDFLAGS=${LDFLAGS/\$/} meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
   -Dorc-test=disabled -Dbenchmarks=disabled -Dexamples=disabled -Dgtk_doc=disabled -Dtests=disabled -Dtools=disabled
