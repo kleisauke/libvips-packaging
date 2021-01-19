@@ -40,7 +40,7 @@ RUN \
 # Compiler settings
 ENV \
   PLATFORM="linux-x64" \
-  FLAGS="-O3 -fPIC" \
+  FLAGS="-g -fPIC" \
   MESON="--cross-file=/root/meson.ini"
 
 COPY Toolchain.cmake /root/
