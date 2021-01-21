@@ -391,14 +391,23 @@ make install-strip
 mkdir ${DEPS}/vips
 $CURL https://github.com/libvips/libvips/releases/download/v${VERSION_VIPS}/vips-${VERSION_VIPS}.tar.gz | tar xzC ${DEPS}/vips --strip-components=1
 cd ${DEPS}/vips
+printf "{\n\
+global:\n\
+    vips_*;
+    extern \"C++\" {\n\
+        *vips::*;\n\
+    };\n\
+local:\n\
+    *;\n\
+};" > vips.map
 PKG_CONFIG="pkg-config --static" ./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking \
   --disable-debug --disable-deprecated --disable-introspection --without-analyze --without-cfitsio --without-fftw \
   --without-imagequant --without-magick --without-matio --without-nifti --without-OpenEXR \
-  --without-openslide --without-pdfium --without-poppler --without-ppm --without-radiance \
-  ${LINUX:+LDFLAGS="$LDFLAGS -Wl,-Bsymbolic-functions"}
+  --without-openslide --without-pdfium --without-poppler --without-ppm --without-radiance
 # https://docs.fedoraproject.org/en-US/packaging-guidelines/#_removing_rpath
 sed -i'.bak' 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
-make install-strip
+make -C 'libvips' install-strip ${LINUX:+LDFLAGS="$LDFLAGS -Wl,-Bsymbolic-functions -Wl,--version-script=$DEPS/vips/vips.map"}
+make -C 'cplusplus' install-strip ${LINUX:+LDFLAGS="$LDFLAGS -Wl,-Bsymbolic-functions -Wl,--version-script=$DEPS/vips/vips.map"}
 
 # Cleanup
 rm -rf ${TARGET}/lib/{pkgconfig,.libs,*.la,cmake}
