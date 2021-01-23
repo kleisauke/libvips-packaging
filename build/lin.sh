@@ -60,6 +60,12 @@ export CARGO_PROFILE_RELEASE_LTO=true
 export CARGO_PROFILE_RELEASE_OPT_LEVEL=s
 export CARGO_PROFILE_RELEASE_PANIC=abort
 
+# Workaround for https://github.com/rust-lang/compiler-builtins/issues/353
+# (applies only to ARMv6 and ARMv7)
+if [[ $PLATFORM == "linux-armv"* ]]; then
+  export LDFLAGS+=" -Wl,--allow-multiple-definition"
+fi
+
 # We don't want to use any native libraries, so unset PKG_CONFIG_PATH
 unset PKG_CONFIG_PATH
 
@@ -206,13 +212,13 @@ cd ${DEPS}/lcms2
 make install-strip
 
 mkdir ${DEPS}/aom
-$CURL https://aomedia.googlesource.com/aom/+archive/v${VERSION_AOM}.tar.gz | tar xzC ${DEPS}/aom
+$CURL https://storage.googleapis.com/aom-releases/libaom-${VERSION_AOM}.tar.gz | tar xzC ${DEPS}/aom
 cd ${DEPS}/aom
 mkdir aom_build
 cd aom_build
 AOM_AS_FLAGS="${FLAGS}" LDFLAGS=${LDFLAGS/\$/} cmake -G"Unix Makefiles" \
   -DCMAKE_TOOLCHAIN_FILE=${ROOT}/Toolchain.cmake -DCMAKE_INSTALL_PREFIX=${TARGET} -DCMAKE_INSTALL_LIBDIR=lib \
-  -DENABLE_DOCS=0 -DENABLE_TESTS=0 -DENABLE_TESTDATA=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 \
+  -DBUILD_SHARED_LIBS=FALSE -DENABLE_DOCS=0 -DENABLE_TESTS=0 -DENABLE_TESTDATA=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 \
   -DCONFIG_PIC=1 -DENABLE_NASM=1 ${WITHOUT_NEON:+-DENABLE_NEON=0} \
   ..
 make install/strip
