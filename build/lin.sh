@@ -171,12 +171,10 @@ make install-strip
 mkdir ${DEPS}/glib
 $CURL https://download.gnome.org/sources/glib/$(without_patch $VERSION_GLIB)/glib-${VERSION_GLIB}.tar.xz | tar xJC ${DEPS}/glib --strip-components=1
 cd ${DEPS}/glib
-# We can safely build GModule statically
-sed -i'.bak' "s/^libgmodule = /&static_/" gmodule/meson.build
 if [ "${PLATFORM%-*}" == "linuxmusl" ]; then
   $CURL https://git.alpinelinux.org/aports/plain/main/glib/musl-libintl.patch | patch -p1
 fi
-LDFLAGS=${LDFLAGS/\$/} meson setup _build --default-library=shared --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+LDFLAGS=${LDFLAGS/\$/} meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
   -Dinternal_pcre=true -Dtests=false -Dinstalled_tests=false -Dlibmount=disabled -Dlibelf=disabled ${DARWIN:+-Dbsymbolic_functions=false}
 ninja -C _build
 ninja -C _build install
