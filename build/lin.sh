@@ -394,27 +394,10 @@ make install-strip
 mkdir ${DEPS}/vips
 $CURL https://github.com/libvips/libvips/releases/download/v${VERSION_VIPS}/vips-${VERSION_VIPS}.tar.gz | tar xzC ${DEPS}/vips --strip-components=1
 cd ${DEPS}/vips
-# Prevent unused symbols from being exported to avoid collisions with system libraries
-# nm -D sharp.node | grep "U g_"
+# Prevent the g_param_spec_types symbol from being exported to avoid collision with system libraries
 printf "{\n\
-global:\n\
-    vips_*;
-    extern \"C++\" {\n\
-        *vips::*;\n\
-    };\n\
-    g_assertion_message_expr;
-    g_free;
-    g_log_set_handler;
-    g_malloc;
-    g_object_ref;
-    g_object_unref;
-    g_once_impl;
-    g_setenv;
-    g_snprintf;
-    g_type_check_instance_is_a;
-    g_type_from_name;
 local:\n\
-    *;\n\
+    g_param_spec_types;\n\
 };" > vips.map
 PKG_CONFIG="pkg-config --static" ./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking \
   --disable-debug --disable-deprecated --disable-introspection --without-analyze --without-cfitsio --without-fftw \
