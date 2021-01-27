@@ -73,6 +73,12 @@ export CARGO_PROFILE_RELEASE_LTO=true
 export CARGO_PROFILE_RELEASE_OPT_LEVEL=s
 export CARGO_PROFILE_RELEASE_PANIC=abort
 
+# Workaround for https://github.com/rust-lang/compiler-builtins/issues/353
+# (applies only to ARMv6 and ARMv7)
+if [[ $PLATFORM == "linux-armv"* ]]; then
+  export LDFLAGS+=" -Wl,--allow-multiple-definition"
+fi
+
 # We don't want to use any native libraries, so unset PKG_CONFIG_PATH
 unset PKG_CONFIG_PATH
 
@@ -102,7 +108,7 @@ VERSION_HARFBUZZ=2.7.4
 VERSION_PIXMAN=0.40.0
 VERSION_CAIRO=1.17.4
 VERSION_FRIBIDI=1.0.10
-VERSION_PANGO=1.48.0
+VERSION_PANGO=1.48.1
 VERSION_SVG=2.50.2
 VERSION_GIF=5.1.4
 VERSION_AOM=2.0.1
@@ -190,14 +196,11 @@ make install-strip
 mkdir ${DEPS}/glib
 $CURL https://download.gnome.org/sources/glib/$(without_patch $VERSION_GLIB)/glib-${VERSION_GLIB}.tar.xz | tar xJC ${DEPS}/glib --strip-components=1
 cd ${DEPS}/glib
-# Disable tests
-sed -i'.bak' "/build_tests =/ s/= .*/= false/" meson.build
 if [ "${PLATFORM%-*}" == "linuxmusl" ]; then
-  #$CURL https://git.alpinelinux.org/aports/plain/main/glib/musl-libintl.patch | patch -p1 # not compatible with glib 2.65.0
-  $CURL https://gist.github.com/kleisauke/f4bda6fc3030cf7b8a4fdb88e2ce8e13/raw/246ac97dfba72ad7607c69eed1810b2354cd2e86/musl-libintl.patch | patch -p1
+  $CURL https://git.alpinelinux.org/aports/plain/main/glib/musl-libintl.patch | patch -p1
 fi
 LDFLAGS=${LDFLAGS/\$/} meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
-  -Dinternal_pcre=true -Dinstalled_tests=false -Dlibmount=disabled -Dlibelf=disabled ${DARWIN:+-Dbsymbolic_functions=false}
+  -Dinternal_pcre=true -Dtests=false -Dinstalled_tests=false -Dlibmount=disabled -Dlibelf=disabled ${DARWIN:+-Dbsymbolic_functions=false}
 ninja -C _build
 ninja -C _build install
 
@@ -212,6 +215,8 @@ make install-strip
 mkdir ${DEPS}/gsf
 $CURL https://download.gnome.org/sources/libgsf/$(without_patch $VERSION_GSF)/libgsf-${VERSION_GSF}.tar.xz | tar xJC ${DEPS}/gsf --strip-components=1
 cd ${DEPS}/gsf
+# Skip unused subdirs
+sed -i'.bak' "s/ doc tools tests thumbnailer python//" Makefile.in
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
   --without-bz2 --without-gdk-pixbuf --with-zlib=${TARGET}
 make install-strip
@@ -230,13 +235,13 @@ cd ${DEPS}/lcms2
 make install-strip
 
 mkdir ${DEPS}/aom
-$CURL https://aomedia.googlesource.com/aom/+archive/v${VERSION_AOM}.tar.gz | tar xzC ${DEPS}/aom
+$CURL https://storage.googleapis.com/aom-releases/libaom-${VERSION_AOM}.tar.gz | tar xzC ${DEPS}/aom
 cd ${DEPS}/aom
 mkdir aom_build
 cd aom_build
 AOM_AS_FLAGS="${FLAGS}" LDFLAGS=${LDFLAGS/\$/} cmake -G"Unix Makefiles" \
   -DCMAKE_TOOLCHAIN_FILE=${ROOT}/Toolchain.cmake -DCMAKE_INSTALL_PREFIX=${TARGET} -DCMAKE_INSTALL_LIBDIR=lib \
-  -DENABLE_DOCS=0 -DENABLE_TESTS=0 -DENABLE_TESTDATA=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 \
+  -DBUILD_SHARED_LIBS=FALSE -DENABLE_DOCS=0 -DENABLE_TESTS=0 -DENABLE_TESTDATA=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 \
   -DCONFIG_PIC=1 -DENABLE_NASM=1 ${WITHOUT_NEON:+-DENABLE_NEON=0} ${DARWIN_ARM:+-DCONFIG_RUNTIME_CPU_DETECT=0} \
   ..
 make install/strip
@@ -302,6 +307,13 @@ sed -i'.bak' "/subdir('tests')/{N;d;}" meson.build
 sed -i'.bak' "/\[ 'bmp'/{N;N;N;d;}" gdk-pixbuf/meson.build
 sed -i'.bak' "/\[ 'pnm'/d" gdk-pixbuf/meson.build
 sed -i'.bak' "/\[ 'xpm'/{N;N;N;N;d;}" gdk-pixbuf/meson.build
+# Skip executables
+sed -i'.bak' "/gdk-pixbuf-csource/{N;N;d;}" gdk-pixbuf/meson.build
+sed -i'.bak' "/loaders_cache = custom/{N;N;N;N;N;N;N;N;N;c\\
+  loaders_cache = []\\
+  loaders_dep = declare_dependency()
+}" gdk-pixbuf/meson.build
+sed -i'.bak' "/gdk-pixbuf-query-loaders/d" build-aux/post-install.sh
 # Ensure meson can find libjpeg when cross-compiling
 sed -i'.bak' "s/has_header('jpeglib.h')/has_header('jpeglib.h', args: '-I\/target\/include')/g" meson.build
 sed -i'.bak' "s/cc.find_library('jpeg'/dependency('libjpeg'/g" meson.build
@@ -392,6 +404,8 @@ sed -i'.bak' "s/^\(Requires:.*\)/\1 cairo-gobject pangocairo/" librsvg.pc.in
 sed -i'.bak' "/debug =/ s/= .*/= false/" Cargo.toml
 # LTO optimization does not work for staticlib+rlib compilation
 sed -i'.bak' "s/, \"rlib\"//" librsvg/Cargo.toml
+# Skip executables
+sed -i'.bak' "/PROGRAMS = /d" Makefile.in
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
   --disable-introspection --disable-tools --disable-pixbuf-loader ${DARWIN:+--disable-Bsymbolic}
 make install-strip
