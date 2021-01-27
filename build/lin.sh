@@ -171,7 +171,7 @@ if [ "${PLATFORM%-*}" == "linuxmusl" ] || [ "$DARWIN" = true ]; then
   $CURL https://ftp.gnu.org/pub/gnu/gettext/gettext-${VERSION_GETTEXT}.tar.xz | tar xJC ${DEPS}/gettext --strip-components=1
   cd ${DEPS}/gettext/gettext-runtime
   ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
-    --disable-libasprintf --disable-java --disable-native-java --disable-csharp
+    --disable-libasprintf --disable-java --disable-native-java --disable-csharp || (cat config.log && exit 1)
   make install-strip
 fi
 
