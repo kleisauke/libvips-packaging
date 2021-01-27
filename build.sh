@@ -58,6 +58,8 @@ for flavour in darwin-x64 darwin-arm64v8; do
       export MESON="--cross-file=$PWD/darwin-arm64v8/meson.ini"
       # macOS 11 is the first version to support arm macs
       export MACOSX_DEPLOYMENT_TARGET="11.0"
+      export SDKROOT=$(xcrun -sdk macosx11.0 --show-sdk-path)
+      echo $SDKROOT
     fi
 
     . $PWD/build/mac.sh
