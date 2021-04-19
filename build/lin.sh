@@ -150,7 +150,7 @@ version_latest "lcms2" "$VERSION_LCMS2" "9815"
 version_latest "png" "$VERSION_PNG16" "1705"
 version_latest "spng" "$VERSION_SPNG" "24289"
 version_latest "webp" "$VERSION_WEBP" "1761"
-version_latest "tiff" "$VERSION_TIFF" "13521"
+#version_latest "tiff" "$VERSION_TIFF" "13521" # latest version in release monitoring is a release candidate
 version_latest "orc" "$VERSION_ORC" "2573"
 version_latest "gdkpixbuf" "$VERSION_GDKPIXBUF" "9533"
 version_latest "freetype" "$VERSION_FREETYPE" "854"
