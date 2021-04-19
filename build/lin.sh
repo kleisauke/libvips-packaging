@@ -111,7 +111,7 @@ VERSION_IMAGEQUANT=2.4.1
 VERSION_WEBP=1.2.0
 VERSION_TIFF=4.2.0
 VERSION_ORC=0.4.32
-VERSION_PROXY_LIBINTL=50bd252
+VERSION_PROXY_LIBINTL=ef9fe6d
 VERSION_GDKPIXBUF=2.42.6
 VERSION_FREETYPE=2.10.4
 VERSION_EXPAT=2.3.0
@@ -207,9 +207,8 @@ make install-strip
 mkdir ${DEPS}/glib
 $CURL https://download.gnome.org/sources/glib/$(without_patch $VERSION_GLIB)/glib-${VERSION_GLIB}.tar.xz | tar xJC ${DEPS}/glib --strip-components=1
 cd ${DEPS}/glib
-if [ "${PLATFORM%-*}" == "linuxmusl" ]; then
-  #$CURL https://git.alpinelinux.org/aports/plain/main/glib/musl-libintl.patch | patch -p1 # not compatible with latest glib
-  $CURL https://gist.github.com/kleisauke/f4bda6fc3030cf7b8a4fdb88e2ce8e13/raw/246ac97dfba72ad7607c69eed1810b2354cd2e86/musl-libintl.patch | patch -p1
+if [ "${PLATFORM%-*}" == "linuxmusl" ] || [ "$DARWIN" = true ]; then
+  $CURL https://gist.github.com/kleisauke/f6dcbf02a9aa43fd582272c3d815e7a8/raw/13049037ce45592d0eb76a12a761212bc48bc879/glib-proxy-libintl.patch | patch -p1
 fi
 LDFLAGS=${LDFLAGS/\$/} meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
   -Dinternal_pcre=true -Dtests=false -Dinstalled_tests=false -Dlibmount=disabled -Dlibelf=disabled ${DARWIN:+-Dbsymbolic_functions=false}
