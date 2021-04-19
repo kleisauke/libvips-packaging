@@ -230,14 +230,15 @@ cd ${DEPS}/gsf
 # Skip unused subdirs
 sed -i'.bak' "s/ doc tools tests thumbnailer python//" Makefile.in
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
-  --without-bz2 --without-gdk-pixbuf --with-zlib=${TARGET}
+  --without-bz2 --without-gdk-pixbuf --disable-nls --without-libiconv-prefix --without-libintl-prefix --with-zlib=${TARGET}
 make install-strip
 
 mkdir ${DEPS}/exif
 $CURL https://github.com/libexif/libexif/releases/download/libexif-${VERSION_EXIF//./_}-release/libexif-${VERSION_EXIF}.tar.xz | tar xJC ${DEPS}/exif --strip-components=1
 cd ${DEPS}/exif
 autoreconf -fiv
-./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking
+./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
+  --disable-nls --without-libiconv-prefix --without-libintl-prefix
 make install-strip
 
 mkdir ${DEPS}/lcms2
@@ -365,7 +366,7 @@ $CURL https://www.freedesktop.org/software/fontconfig/release/fontconfig-${VERSI
 cd ${DEPS}/fontconfig
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
   --with-expat-includes=${TARGET}/include --with-expat-lib=${TARGET}/lib ${LINUX:+--sysconfdir=/etc} \
-  ${DARWIN:+--sysconfdir=/usr/local/etc} --disable-docs
+  ${DARWIN:+--sysconfdir=/usr/local/etc} --disable-docs --disable-nls
 make install-strip
 
 mkdir ${DEPS}/harfbuzz
@@ -438,7 +439,8 @@ sed -i'.bak' "s/, \"rlib\"//" Cargo.toml
 # Skip executables
 sed -i'.bak' "/SCRIPTS = /d" Makefile.in
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
-  --disable-introspection --disable-tools --disable-pixbuf-loader ${DARWIN:+--disable-Bsymbolic}
+  --disable-introspection --disable-tools --disable-pixbuf-loader --disable-nls --without-libiconv-prefix --without-libintl-prefix \
+  ${DARWIN:+--disable-Bsymbolic}
 make install-strip
 
 mkdir ${DEPS}/gif
