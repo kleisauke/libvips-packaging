@@ -50,7 +50,7 @@ RUN \
   cd .. && \
   rm -rf crosstool-ng
 
-# Build cross-compiler (GCC 10.2.0 - glibc 2.17)
+# Build cross-compiler (GCC 11.1.0 - glibc 2.17)
 WORKDIR /x-tools/build
 
 COPY armv7-linux-gnueabihf.config /x-tools/build/.config

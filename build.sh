@@ -6,7 +6,7 @@ if [ $# -lt 1 ]; then
   echo "Usage: $0 VERSION [PLATFORM]"
   echo "Build shared libraries for libvips and its dependencies via containers"
   echo
-  echo "Please specify the libvips VERSION, e.g. 8.10.6"
+  echo "Please specify the libvips VERSION, e.g. 8.11.0-rc1"
   echo
   echo "Optionally build for only one PLATFORM, defaults to building for all"
   echo

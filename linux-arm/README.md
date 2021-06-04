@@ -19,5 +19,5 @@ $category > $option = $value -- $comment
 - Operating System > Target OS = linux
 - Operating System > Version of Linux = 3.2.101 -- Debian Wheezy kernel
 - C-library > Version of glibc = 2.17
-- C compiler > Version of GCC = 10.2.0
+- C compiler > Version of GCC = 11.1.0
 - C compiler > C++ = ENABLE

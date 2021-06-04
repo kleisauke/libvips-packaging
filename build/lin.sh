@@ -54,7 +54,7 @@ if [ "$LINUX" = true ]; then
 fi
 
 # The ARM64v8 and ARMv7 binaries needs to be statically linked against libstdc++, since
-# libstdc++.so.6.0.28 (GLIBCXX_3.4.26) provided by GCC 10.2 isn't available on every OS
+# libstdc++.so.6.0.29 (GLIBCXX_3.4.29) provided by GCC 11.1 isn't available on every OS
 # Note: this is handled in devtoolset in a much better way, see: https://stackoverflow.com/a/19340023/10952119
 if [[ $PLATFORM == "linux-arm"* ]]; then
   export LDFLAGS+=" -static-libstdc++"
@@ -129,7 +129,6 @@ VERSION_CAIRO=1.17.4
 VERSION_FRIBIDI=1.0.10
 VERSION_PANGO=1.48.5
 VERSION_SVG=2.51.2
-VERSION_GIF=5.1.4
 VERSION_AOM=3.1.0
 VERSION_HEIF=1.12.0
 
@@ -174,7 +173,6 @@ version_latest "cairo" "$VERSION_CAIRO" "247"
 version_latest "fribidi" "$VERSION_FRIBIDI" "857"
 version_latest "pango" "$VERSION_PANGO" "11783"
 version_latest "svg" "$VERSION_SVG" "5420"
-#version_latest "gif" "$VERSION_GIF" "1158" # v5.1.5+ provides a Makefile only so will require custom cross-compilation setup
 version_latest "aom" "$VERSION_AOM" "17628"
 version_latest "heif" "$VERSION_HEIF" "64439"
 if [ "$ALL_AT_VERSION_LATEST" = "false" ]; then exit 1; fi
@@ -466,12 +464,6 @@ sed -i'.bak' "/SCRIPTS = /d" Makefile.in
   ${DARWIN:+--disable-Bsymbolic}
 make install-strip
 
-mkdir ${DEPS}/gif
-$CURL https://downloads.sourceforge.net/project/giflib/giflib-${VERSION_GIF}.tar.gz | tar xzC ${DEPS}/gif --strip-components=1
-cd ${DEPS}/gif
-CFLAGS="${CFLAGS} -O3" ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking
-make install-strip
-
 mkdir ${DEPS}/vips
 $CURL https://github.com/libvips/libvips/releases/download/v${VERSION_VIPS}/vips-${VERSION_VIPS}.tar.gz | tar xzC ${DEPS}/vips --strip-components=1
 cd ${DEPS}/vips
@@ -482,9 +474,10 @@ local:\n\
 };" > vips.map
 PKG_CONFIG="pkg-config --static" CFLAGS="${CFLAGS} -O3" CXXFLAGS="${CXXFLAGS} -O3" ./configure \
   --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking \
-  --disable-debug --disable-deprecated --disable-introspection --without-analyze --without-cfitsio --without-fftw \
-  --without-magick --without-matio --without-nifti --without-OpenEXR \
-  --without-openslide --without-pdfium --without-poppler --without-ppm --without-radiance \
+  --disable-debug --disable-deprecated --disable-introspection --disable-modules --without-doxygen \
+  --without-radiance --without-analyze --without-ppm --without-fftw --without-pdfium --without-poppler \
+  --without-OpenEXR --without-libjxl --without-libopenjp2 --without-openslide --without-matio \
+  --without-nifti --without-cfitsio --without-magick \
   ${LINUX:+LDFLAGS="$LDFLAGS -Wl,-Bsymbolic-functions -Wl,--version-script=$DEPS/vips/vips.map"}
 # https://docs.fedoraproject.org/en-US/packaging-guidelines/#_removing_rpath
 sed -i'.bak' 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
@@ -568,7 +561,6 @@ printf "{\n\
   \"freetype\": \"${VERSION_FREETYPE}\",\n\
   \"fribidi\": \"${VERSION_FRIBIDI}\",\n\
   \"gdkpixbuf\": \"${VERSION_GDKPIXBUF}\",\n\
-  \"gif\": \"${VERSION_GIF}\",\n\
   \"glib\": \"${VERSION_GLIB}\",\n\
   \"gsf\": \"${VERSION_GSF}\",\n\
   \"harfbuzz\": \"${VERSION_HARFBUZZ}\",\n\
