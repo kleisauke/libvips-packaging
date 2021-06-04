@@ -29,9 +29,9 @@ jobs:
           - 'linux-arm64'
           - 'linux-musl-x64'
           - 'linux-musl-arm64'
-          - 'win-x64'
-          - 'win-x86'
-          - 'win-arm64'
+          #- 'win-x64'
+          #- 'win-x86'
+          #- 'win-arm64'
         include:
           - os: macos-10.15
             platform: 'osx-x64'
