@@ -123,15 +123,15 @@ VERSION_GDKPIXBUF=2.42.6
 VERSION_FREETYPE=2.11.0
 VERSION_EXPAT=2.4.1
 VERSION_FONTCONFIG=2.13.93
-VERSION_HARFBUZZ=3.1.1
+VERSION_HARFBUZZ=3.1.2
 VERSION_PIXMAN=0.40.0
 VERSION_CAIRO=1.17.4
 VERSION_FRIBIDI=1.0.11
-VERSION_PANGO=1.49.3
+VERSION_PANGO=1.49.4
 VERSION_SVG=2.52.4
 VERSION_AOM=3.2.0
 VERSION_HEIF=1.12.0
-VERSION_CGIF=0.0.2
+VERSION_CGIF=0.0.3
 
 # Remove patch version component
 without_patch() {
@@ -453,7 +453,7 @@ cd ${DEPS}/pango
 # Disable utils, examples, tests and tools
 sed -i'.bak' "/subdir('utils')/{N;N;N;d;}" meson.build
 meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
-  -Dgtk_doc=false -Dintrospection=disabled -Dfontconfig=enabled
+  --force-fallback-for=json-glib -Dgtk_doc=false -Dintrospection=disabled -Dfontconfig=enabled
 ninja -C _build
 ninja -C _build install
 
