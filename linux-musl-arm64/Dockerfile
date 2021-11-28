@@ -36,7 +36,7 @@ RUN \
     shared-mime-info \
     texinfo && \
   apk --update --no-cache --repository https://alpine.global.ssl.fastly.net/alpine/edge/community/ add advancecomp && \
-  curl -Ls https://github.com/lovell/aarch64-linux-musl-crosstools/archive/main.tar.gz | tar -hxzC / --strip-components=2 && \
+  curl -Ls https://github.com/lovell/aarch64-linux-musl-crosstools/archive/main.tar.gz | tar -hxzC / --strip-components 2 && \
   ln -s /usr/bin/pkg-config /bin/aarch64-linux-musl-pkg-config && \
   curl https://sh.rustup.rs -sSf | sh -s -- -y \
     --no-modify-path \
@@ -51,7 +51,12 @@ RUN \
 RUN \
   printf "[unstable]\n\
 build-std = [\"std\", \"panic_abort\"]\n\
-build-std-features = [\"panic_immediate_abort\"]" > $CARGO_HOME/config.toml
+build-std-features = [\"panic_immediate_abort\", \"compiler-builtins-c\"]" > $CARGO_HOME/config.toml
+
+# `c` feature of the `compiler-builtins` crate needs the compiler-rt sources from LLVM
+RUN \
+  curl -Ls https://github.com/rust-lang/llvm-project/archive/rustc/13.0-2021-09-30.tar.gz | \
+    tar -xzC /root --strip-components 1 llvm-project-rustc-13.0-2021-09-30/compiler-rt
 
 # Compiler settings
 ENV \
@@ -59,6 +64,7 @@ ENV \
   PLATFORM="linux-musl-arm64" \
   CHOST="aarch64-linux-musl" \
   RUST_TARGET="aarch64-unknown-linux-musl" \
+  RUST_COMPILER_RT_ROOT="/root/compiler-rt" \
   FLAGS="-march=armv8-a" \
   MESON="--cross-file=/root/meson.ini"
 

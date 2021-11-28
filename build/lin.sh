@@ -188,7 +188,7 @@ if [ "$ALL_AT_VERSION_LATEST" = "false" ]; then exit 1; fi
 # Download and build dependencies from source
 
 if [ "$DARWIN" = true ]; then
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+  $CURL --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
     | sh -s -- -y --no-modify-path --profile minimal ${DARWIN_ARM:+--default-toolchain nightly}
   if [ "$DARWIN_ARM" = true ]; then
     ${CARGO_HOME}/bin/rustup component add rust-src 
@@ -198,7 +198,12 @@ if [ "$DARWIN" = true ]; then
     # See: https://github.com/lovell/sharp-libvips/issues/109
     printf "[unstable]\n\
 build-std = [\"std\", \"panic_abort\"]\n\
-build-std-features = [\"panic_immediate_abort\"]" > ${CARGO_HOME}/config.toml
+build-std-features = [\"panic_immediate_abort\", \"compiler-builtins-c\"]" > ${CARGO_HOME}/config.toml
+
+    # `c` feature of the `compiler-builtins` crate needs the compiler-rt sources from LLVM
+    $CURL https://github.com/rust-lang/llvm-project/archive/rustc/13.0-2021-09-30.tar.gz | \
+      tar -xzC ${ROOT} --strip-components 1 llvm-project-rustc-13.0-2021-09-30/compiler-rt
+    export RUST_COMPILER_RT_ROOT="${ROOT}/compiler-rt"
   fi
 fi
 
