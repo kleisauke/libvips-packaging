@@ -198,12 +198,13 @@ if [ "$DARWIN" = true ]; then
     # See: https://github.com/lovell/sharp-libvips/issues/109
     printf "[unstable]\n\
 build-std = [\"std\", \"panic_abort\"]\n\
-build-std-features = [\"panic_immediate_abort\", \"compiler-builtins-c\"]" > ${CARGO_HOME}/config.toml
+build-std-features = [\"panic_immediate_abort\", \"compiler-builtins-c\"]\n\
+[env]\n\
+RUST_COMPILER_RT_ROOT = \"${ROOT}/compiler-rt\"" > ${CARGO_HOME}/config.toml
 
     # `c` feature of the `compiler-builtins` crate needs the compiler-rt sources from LLVM
     $CURL https://github.com/rust-lang/llvm-project/archive/rustc/13.0-2021-09-30.tar.gz | \
       tar -xzC ${ROOT} --strip-components 1 llvm-project-rustc-13.0-2021-09-30/compiler-rt
-    export RUST_COMPILER_RT_ROOT="${ROOT}/compiler-rt"
   fi
 fi
 

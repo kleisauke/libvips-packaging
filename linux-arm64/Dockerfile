@@ -42,7 +42,9 @@ RUN \
 RUN \
   printf "[unstable]\n\
 build-std = [\"std\", \"panic_abort\"]\n\
-build-std-features = [\"panic_immediate_abort\", \"compiler-builtins-c\"]" > $CARGO_HOME/config.toml
+build-std-features = [\"panic_immediate_abort\", \"compiler-builtins-c\"]\n\
+[env]\n\
+RUST_COMPILER_RT_ROOT = \"/root/compiler-rt\"" > $CARGO_HOME/config.toml
 
 # `c` feature of the `compiler-builtins` crate needs the compiler-rt sources from LLVM
 RUN \
@@ -53,7 +55,6 @@ RUN \
 ENV \
   PLATFORM="linux-arm64" \
   CARGO_BUILD_TARGET="aarch64-unknown-linux-gnu" \
-  RUST_COMPILER_RT_ROOT="/root/compiler-rt" \
   FLAGS="-march=armv8-a" \
   MESON="--cross-file=/root/meson.ini"
 
