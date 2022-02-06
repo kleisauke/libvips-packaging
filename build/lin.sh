@@ -50,7 +50,7 @@ export LDFLAGS="-L${TARGET}/lib"
 # On Linux, we need to create a relocatable library
 # Note: this is handled for macOS using the `install_name_tool` (see below)
 if [ "$LINUX" = true ]; then
-  export LDFLAGS+=" -Wl,--gc-sections -Wl,-rpath='\$\$ORIGIN/'"
+  export LDFLAGS+=" -Wl,--gc-sections -Wl,-rpath=\$ORIGIN/"
 fi
 
 # The ARMv7 binaries needs to be statically linked against libstdc++, since
@@ -291,6 +291,9 @@ $CURL https://github.com/lovell/libheif/commit/e625a702ec7d46ce042922547d7604529
 $CURL https://github.com/strukturag/libheif/pull/551/commits/e9004e96fbaf45b97d73e2469afd8ecfc9930ad0.patch | patch -p1
 # [PATCH] aom: verify NCLX values against known bounds
 $CURL https://github.com/strukturag/libheif/pull/583/commits/80300f8c8b4edb4e214a94668eeb9b88cba95774.patch | git apply -
+# Fix static build by renaming `Requires.private` to `Requires` (workaround for Meson, see: https://github.com/mesonbuild/meson/pull/6629)
+sed -i'.bak' "/Requires:/d" libheif.pc.in
+sed -i'.bak' "s/Requires.private:/Requires:/" libheif.pc.in
 CFLAGS="${CFLAGS} -O3" CXXFLAGS="${CXXFLAGS} -O3" ./configure \
   --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
   --disable-gdk-pixbuf --disable-go --disable-examples --disable-libde265 --disable-x265
@@ -479,35 +482,29 @@ ninja -C _build
 ninja -C _build install
 
 mkdir ${DEPS}/vips
-$CURL https://github.com/libvips/libvips/releases/download/v${VERSION_VIPS}/vips-${VERSION_VIPS}.tar.gz | tar xzC ${DEPS}/vips --strip-components=1
+#$CURL https://github.com/libvips/libvips/releases/download/v${VERSION_VIPS}/vips-${VERSION_VIPS}.tar.gz | tar xzC ${DEPS}/vips --strip-components=1
+$CURL https://github.com/libvips/libvips/archive/${VERSION_VIPS}.tar.gz | tar xzC ${DEPS}/vips --strip-components=1
 cd ${DEPS}/vips
-# Prevent exporting the g_param_spec_types symbol to avoid collisions with shared libraries
-printf "{\n\
-local:\n\
-    g_param_spec_types;\n\
-};" > vips.map
-PKG_CONFIG="pkg-config --static" CFLAGS="${CFLAGS} -O3" CXXFLAGS="${CXXFLAGS} -O3" ./configure \
-  --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking \
-  --disable-debug --disable-deprecated --disable-introspection --disable-modules --without-doxygen \
-  --without-analyze --without-cfitsio --without-fftw --without-libjxl --without-libopenjp2 \
-  --without-magick --without-matio --without-nifti --without-OpenEXR \
-  --without-openslide --without-pdfium --without-poppler --without-ppm --without-radiance \
-  ${LINUX:+LDFLAGS="$LDFLAGS -Wl,-Bsymbolic-functions -Wl,--version-script=$DEPS/vips/vips.map"}
-# https://docs.fedoraproject.org/en-US/packaging-guidelines/#_removing_rpath
-sed -i'.bak' 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
-if [ "$PLATFORM" == "linux-arm" ]; then
-  # Remove -nostdlib from linker commandline options (i.e. archive_cmds
-  # and archive_expsym_cmds), it won't work with -static-libstdc++
-  sed -i'.bak' 's/-nostdlib//g' libtool
-  # Standard system libraries are used when -nostdlib is not specified,
-  # so we can safely comment out {pre,post}dep_objects and postdeps
-  # See: https://src.fedoraproject.org/rpms/mesa/c/cf99e4b75f8f817f7cc610b266b907d4eecca841
-  sed -i'.bak' 's/^predep_objects=.*$/#&/' libtool
-  sed -i'.bak' 's/^postdep_objects=.*$/#&/' libtool
-  sed -i'.bak' 's/^postdeps=.*$/#&/' libtool
+if [ "$LINUX" = true ]; then
+  # Ensure symbols from external libs (except for libglib-2.0.a and libgobject-2.0.a) are not exposed
+  EXCLUDE_LIBS=$(find ${TARGET}/lib -maxdepth 1 -name '*.a' ! -name 'libglib-2.0.a' ! -name 'libgobject-2.0.a' -printf "-Wl,--exclude-libs=%f ")
+  EXCLUDE_LIBS=${EXCLUDE_LIBS%?}
+  # Localize the g_param_spec_types symbol to avoid collisions with shared libraries
+  # See: https://github.com/lovell/sharp/issues/2535#issuecomment-766400693
+  printf "{local:g_param_spec_types;};" > vips.map
+elif [ "$DARWIN" = true ]; then
+  # https://github.com/pybind/pybind11/issues/595
+  export STRIP="strip -x"
 fi
-make -C 'libvips' install-strip
-make -C 'cplusplus' install-strip
+# Disable building man pages, gettext po files, tools, and (fuzz-)tests
+sed -i'.bak' "/subdir('man')/{N;N;N;N;d;}" meson.build
+CFLAGS="${CFLAGS} -O3" CXXFLAGS="${CXXFLAGS} -O3" meson setup _build --default-library=shared --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+  -Ddeprecated=false -Dintrospection=false -Dmodules=disabled -Dcfitsio=disabled -Dfftw=disabled -Djpeg-xl=disabled \
+  -Dmagick=disabled -Dmatio=disabled -Dnifti=disabled -Dopenexr=disabled -Dopenjpeg=disabled -Dopenslide=disabled \
+  -Dpdfium=disabled -Dpoppler=disabled -Dquantizr=disabled -Dppm=false -Danalyze=false -Dradiance=false \
+  ${LINUX:+-Dcpp_link_args="$LDFLAGS -Wl,-Bsymbolic-functions -Wl,--version-script=$DEPS/vips/vips.map $EXCLUDE_LIBS"}
+ninja -C _build
+ninja -C _build install
 
 # Cleanup
 rm -rf ${TARGET}/lib/{pkgconfig,.libs,*.la,cmake}
