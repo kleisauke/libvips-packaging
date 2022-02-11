@@ -53,7 +53,7 @@ for flavour in osx-x64 osx-arm64; do
     if [ $PLATFORM = "osx-arm64" ]; then
       # ARM64 builds work via cross compilation from an x86_64 machine
       export CHOST="aarch64-apple-darwin"
-      export FLAGS+=" -arch arm64"
+      export FLAGS+=" -target arm64-apple-macos11"
       export MESON="--cross-file=$PWD/$PLATFORM/meson.ini"
       # macOS 11 Big Sur is the first version to support ARM-based macs
       export MACOSX_DEPLOYMENT_TARGET="11.0"
