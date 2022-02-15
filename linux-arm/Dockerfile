@@ -30,7 +30,8 @@ RUN \
     texinfo && \
   curl https://sh.rustup.rs -sSf | sh -s -- -y \
     --no-modify-path \
-    --profile minimal && \
+    --profile minimal \
+    --default-toolchain nightly && \
   rustup target add arm-unknown-linux-gnueabihf && \
   ln -s /usr/bin/cmake3 /usr/bin/cmake && \
   pip3 install --upgrade pip && \
