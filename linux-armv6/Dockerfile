@@ -47,7 +47,7 @@ RUN \
 
 # Compiler settings
 ENV \
-  PKG_CONFIG="/usr/bin/arm-linux-gnueabihf-pkg-config" \
+  PKG_CONFIG="arm-linux-gnueabihf-pkg-config --static" \
   PLATFORM="linux-armv6" \
   CHOST="arm-rpi-linux-gnueabihf" \
   RUST_TARGET="arm-unknown-linux-gnueabihf" \

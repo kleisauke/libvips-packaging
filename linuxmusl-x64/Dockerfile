@@ -12,6 +12,8 @@ ENV \
 # Build dependencies
 RUN \
   apk update && apk upgrade && \
+  # https://github.com/pkgconf/pkgconf/commit/62bbd3b664d4b03011a4b382ed20353a91c30406
+  apk add pkgconf --repository=https://dl-cdn.alpinelinux.org/alpine/v3.12/main && \
   apk --update --no-cache add \
     autoconf \
     automake \
@@ -46,6 +48,7 @@ RUN \
 
 # Compiler settings
 ENV \
+  PKG_CONFIG="pkg-config --static" \
   PLATFORM="linuxmusl-x64" \
   FLAGS="-march=westmere"
 

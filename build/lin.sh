@@ -64,8 +64,6 @@ if [ "$DARWIN" = true ]; then
   export PATH="${CARGO_HOME}/bin:${PATH}"
   if [ "$PLATFORM" == "darwin-arm64v8" ]; then
     export DARWIN_ARM=true
-    # We need to explicitly tell meson about pkg-config when cross compiling on macOS
-    export PKG_CONFIG="$(brew --prefix)/bin/pkg-config"
   fi
 fi
 
@@ -278,9 +276,6 @@ $CURL https://github.com/strukturag/libheif/commit/e625a702ec7d46ce042922547d760
 $CURL https://github.com/strukturag/libheif/commit/499a0a31d79936042c7abeef2513bb0b56b81489.patch | patch -p1
 # [PATCH] Add API to sanitize enums relating to color profiles
 $CURL https://github.com/strukturag/libheif/pull/612.patch | git apply -
-# Fix static build by renaming `Requires.private` to `Requires` (workaround for Meson, see: https://github.com/mesonbuild/meson/pull/6629)
-sed -i'.bak' "/Requires:/d" libheif.pc.in
-sed -i'.bak' "s/Requires.private:/Requires:/" libheif.pc.in
 CFLAGS="${CFLAGS} -O3" CXXFLAGS="${CXXFLAGS} -O3" ./configure \
   --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
   --disable-gdk-pixbuf --disable-go --disable-examples --disable-libde265 --disable-x265
@@ -450,10 +445,12 @@ sed -i'.bak' "/SCRIPTS = /d" Makefile.in
 if [[ $CARGO_BUILD_TARGET ]]; then
   sed -i'.bak' "s/@RUST_TARGET_SUBDIR@/$CARGO_BUILD_TARGET\/@RUST_TARGET_SUBDIR@/" Makefile.in
 fi
-./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
+# Remove the --static flag from the PKG_CONFIG env since Rust does not
+# support that. Build with PKG_CONFIG_ALL_STATIC=1 instead.
+PKG_CONFIG=${PKG_CONFIG/ --static/} ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
   --disable-introspection --disable-tools --disable-pixbuf-loader --disable-nls --without-libiconv-prefix --without-libintl-prefix \
   ${DARWIN:+--disable-Bsymbolic}
-make install-strip
+PKG_CONFIG_ALL_STATIC=1 make install-strip
 
 mkdir ${DEPS}/cgif
 $CURL https://github.com/dloebl/cgif/archive/V${VERSION_CGIF}.tar.gz | tar xzC ${DEPS}/cgif --strip-components=1
