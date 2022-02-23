@@ -36,6 +36,7 @@ RUN \
 
 # Compiler settings
 ENV \
+  PKG_CONFIG="pkg-config --static" \
   PLATFORM="linux-x64" \
   FLAGS="-march=westmere" \
   MESON="--cross-file=/root/meson.ini"

@@ -41,6 +41,9 @@ for flavour in osx-x64 osx-arm64; do
     export VERSION_VIPS
     export PLATFORM
 
+    # Use pkg-config provided by Homebrew
+    export PKG_CONFIG="$(brew --prefix)/bin/pkg-config --static"
+
     # 10.9 should be a good minimal release target
     export MACOSX_DEPLOYMENT_TARGET="10.9"
 

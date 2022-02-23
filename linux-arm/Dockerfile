@@ -70,6 +70,7 @@ ENV \
   STRIP="armv7-unknown-linux-gnueabihf-strip" \
   RANLIB="armv7-unknown-linux-gnueabihf-ranlib" \
   OBJDUMP="armv7-unknown-linux-gnueabihf-objdump" \
+  PKG_CONFIG="pkg-config --static" \
   PLATFORM="linux-arm" \
   CHOST="arm-linux-gnueabihf" \
   RUST_TARGET="arm-unknown-linux-gnueabihf" \
