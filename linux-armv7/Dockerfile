@@ -24,9 +24,7 @@ RUN \
     crossbuild-essential-armhf \
     gettext \
     git \
-    gobject-introspection \
     gperf \
-    gtk-doc-tools \
     intltool \
     jq \
     libglib2.0-dev \
@@ -34,7 +32,6 @@ RUN \
     nasm \
     ninja-build \
     python3-pip \
-    texinfo \
     && \
   curl https://sh.rustup.rs -sSf | sh -s -- -y \
     --no-modify-path \

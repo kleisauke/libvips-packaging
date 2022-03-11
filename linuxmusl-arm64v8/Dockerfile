@@ -26,9 +26,7 @@ RUN \
     findutils \
     git \
     glib-dev \
-    gobject-introspection-dev \
     gperf \
-    gtk-doc \
     intltool \
     jq \
     libtool \
@@ -38,7 +36,6 @@ RUN \
     python3 \
     py3-pip \
     shared-mime-info \
-    texinfo \
     && \
   apk --update --no-cache --repository https://alpine.global.ssl.fastly.net/alpine/edge/community/ add advancecomp && \
   curl -Ls https://github.com/lovell/aarch64-linux-musl-crosstools/archive/main.tar.gz | tar -hxzC / --strip-components=2 && \

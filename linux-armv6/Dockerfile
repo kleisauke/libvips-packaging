@@ -23,9 +23,7 @@ RUN \
     cmake \
     gettext \
     git \
-    gobject-introspection \
     gperf \
-    gtk-doc-tools \
     intltool \
     jq \
     libglib2.0-dev \
@@ -33,7 +31,6 @@ RUN \
     nasm \
     ninja-build \
     python3-pip \
-    texinfo \
     && \
   mkdir /root/tools && \
   curl -Ls https://github.com/rvagg/rpi-newer-crosstools/archive/master.tar.gz | tar xzC /root/tools --strip-components=1 && \

@@ -26,9 +26,7 @@ RUN \
     findutils \
     git \
     glib-dev \
-    gobject-introspection-dev \
     gperf \
-    gtk-doc \
     intltool \
     jq \
     libtool \
@@ -37,7 +35,6 @@ RUN \
     ninja \
     python3 \
     shared-mime-info \
-    texinfo \
     && \
   apk --update --no-cache --repository https://alpine.global.ssl.fastly.net/alpine/edge/community/ add advancecomp && \
   curl https://sh.rustup.rs -sSf | sh -s -- -y \
