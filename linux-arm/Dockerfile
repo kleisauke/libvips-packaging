@@ -18,16 +18,14 @@ RUN \
     advancecomp \
     cmake3 \
     glib2-devel \
-    gobject-introspection-devel \
     gperf \
-    gtk-doc \
     help2man \
     jq \
     nasm \
     ncurses-devel \
-    prelink \
     python3-devel \
-    texinfo && \
+    texinfo \
+    which && \
   curl https://sh.rustup.rs -sSf | sh -s -- -y \
     --no-modify-path \
     --profile minimal \
