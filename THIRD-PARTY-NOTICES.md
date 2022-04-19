@@ -30,7 +30,6 @@ used under the terms of the following licences:
 | libwebp       | New BSD License                                                                                           |
 | libxml2       | MIT Licence                                                                                               |
 | mozjpeg       | [zlib License, IJG License, BSD-3-Clause](https://github.com/mozilla/mozjpeg/blob/master/LICENSE.md)      |
-| orc           | [orc License](https://gitlab.freedesktop.org/gstreamer/orc/blob/master/COPYING) (BSD-like)                |
 | pango         | LGPLv3                                                                                                    |
 | pixman        | MIT Licence                                                                                               |
 | proxy-libintl | LGPLv3                                                                                                    |

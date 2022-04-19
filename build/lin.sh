@@ -109,7 +109,6 @@ VERSION_SPNG=0.7.2
 VERSION_IMAGEQUANT=2.4.1
 VERSION_WEBP=1.2.2
 VERSION_TIFF=4.3.0
-VERSION_ORC=0.4.32
 VERSION_PROXY_LIBINTL=0.4
 VERSION_GDKPIXBUF=2.42.8
 VERSION_FREETYPE=2.12.1
@@ -164,7 +163,6 @@ version_latest "png" "$VERSION_PNG16" "1705"
 version_latest "spng" "$VERSION_SPNG" "24289"
 version_latest "webp" "$VERSION_WEBP" "1761"
 version_latest "tiff" "$VERSION_TIFF" "1738"
-version_latest "orc" "$VERSION_ORC" "2573"
 version_latest "proxy-libintl" "$VERSION_PROXY_LIBINTL" "frida/proxy-libintl"
 version_latest "gdkpixbuf" "$VERSION_GDKPIXBUF" "9533"
 version_latest "freetype" "$VERSION_FREETYPE" "854"
@@ -338,14 +336,6 @@ if [ -n "${CHOST}" ]; then autoreconf -fiv; fi
   --with-jpeg-include-dir=${TARGET}/include --with-jpeg-lib-dir=${TARGET}/lib
 make install-strip
 
-mkdir ${DEPS}/orc
-$CURL https://gstreamer.freedesktop.org/data/src/orc/orc-${VERSION_ORC}.tar.xz | tar xJC ${DEPS}/orc --strip-components=1
-cd ${DEPS}/orc
-meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
-  -Dorc-test=disabled -Dbenchmarks=disabled -Dexamples=disabled -Dgtk_doc=disabled -Dtests=disabled -Dtools=disabled
-ninja -C _build
-ninja -C _build install
-
 mkdir ${DEPS}/gdkpixbuf
 $CURL https://download.gnome.org/sources/gdk-pixbuf/$(without_patch $VERSION_GDKPIXBUF)/gdk-pixbuf-${VERSION_GDKPIXBUF}.tar.xz | tar xJC ${DEPS}/gdkpixbuf --strip-components=1
 cd ${DEPS}/gdkpixbuf
@@ -473,7 +463,7 @@ ninja -C _build install
 
 mkdir ${DEPS}/vips
 #$CURL https://github.com/libvips/libvips/releases/download/v${VERSION_VIPS}/vips-${VERSION_VIPS}.tar.gz | tar xzC ${DEPS}/vips --strip-components=1
-$CURL https://github.com/libvips/libvips/archive/${VERSION_VIPS}.tar.gz | tar xzC ${DEPS}/vips --strip-components=1
+$CURL https://github.com/kleisauke/libvips/archive/${VERSION_VIPS}.tar.gz | tar xzC ${DEPS}/vips --strip-components=1
 cd ${DEPS}/vips
 if [ "$LINUX" = true ]; then
   # Ensure symbols from external libs (except for libglib-2.0.a and libgobject-2.0.a) are not exposed
@@ -575,7 +565,6 @@ printf "{\n\
   \"imagequant\": \"${VERSION_IMAGEQUANT}\",\n\
   \"lcms\": \"${VERSION_LCMS2}\",\n\
   \"mozjpeg\": \"${VERSION_MOZJPEG}\",\n\
-  \"orc\": \"${VERSION_ORC}\",\n\
   \"pango\": \"${VERSION_PANGO}\",\n\
   \"pixman\": \"${VERSION_PIXMAN}\",\n\
   \"png\": \"${VERSION_PNG16}\",\n\
