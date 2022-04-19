@@ -30,7 +30,6 @@ used under the terms of the following licences:
 | libvips       | LGPLv3                                                                                                    |
 | libwebp       | New BSD License                                                                                           |
 | libxml2       | MIT Licence                                                                                               |
-| orc           | [orc License](https://gitlab.freedesktop.org/gstreamer/orc/blob/master/COPYING) (BSD-like)                |
 | pango         | LGPLv3                                                                                                    |
 | pixman        | MIT Licence                                                                                               |
 | proxy-libintl | LGPLv3                                                                                                    |
