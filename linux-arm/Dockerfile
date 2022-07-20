@@ -17,10 +17,10 @@ RUN \
   yum install -y --setopt=tsflags=nodocs \
     advancecomp \
     cmake3 \
+    gperf \
     jq \
     nasm \
     # Needed by crosstool-ng
-    gperf \
     help2man \
     ncurses-devel \
     python3-devel \
