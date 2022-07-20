@@ -476,7 +476,7 @@ ninja -C _build
 ninja -C _build install
 
 mkdir ${DEPS}/vips
-$CURL https://github.com/libvips/libvips/releases/download/v${VERSION_VIPS}/vips-${VERSION_VIPS}.tar.gz | tar xzC ${DEPS}/vips --strip-components=1
+$CURL https://github.com/libvips/libvips/archive/${VERSION_VIPS}.tar.gz | tar xzC ${DEPS}/vips --strip-components=1
 cd ${DEPS}/vips
 if [ "$LINUX" = true ]; then
   # Ensure symbols from external libs (except for libglib-2.0.a and libgobject-2.0.a) are not exposed
@@ -547,6 +547,10 @@ function copydeps {
 }
 
 cd ${TARGET}/lib
+if [ "$LINUX" = true ]; then
+  # Check that we really linked with -z nodelete
+  readelf -Wd libvips.so.42 | grep -qF NODELETE || (echo "libvips.so.42 was not linked with -z nodelete" && exit 1)
+fi
 if [ "$PLATFORM" == "linux-arm" ]; then
   # Check that we really didn't link libstdc++ dynamically
   readelf -Wd ${VIPS_CPP_DEP} | grep -qF libstdc && echo "$VIPS_CPP_DEP is dynamically linked against libstdc++" && exit 1
