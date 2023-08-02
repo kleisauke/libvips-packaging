@@ -126,6 +126,7 @@ VERSION_AOM=3.6.1
 VERSION_HEIF=1.16.2
 VERSION_CGIF=0.3.2
 VERSION_PDFIUM=5921
+VERSION_JEMALLOC=5.3.0
 
 # Remove patch version component
 without_patch() {
@@ -187,6 +188,7 @@ version_latest "aom" "$VERSION_AOM" "17628"
 version_latest "heif" "$VERSION_HEIF" "64439"
 version_latest "cgif" "$VERSION_CGIF" "368524"
 version_latest "pdfium" "$VERSION_PDFIUM" "bblanchon/pdfium-binaries"
+version_latest "jemalloc" "$VERSION_JEMALLOC" "jemalloc/jemalloc"
 
 if [ "$ALL_AT_VERSION_LATEST" = "false" ]; then exit 1; fi
 
@@ -209,6 +211,13 @@ if [ "${PLATFORM%-*}" == "linux-musl" ] || [ "$DARWIN" = true ]; then
   meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON}
   meson install -C _build --tag devel
 fi
+
+mkdir ${DEPS}/jemalloc
+$CURL https://github.com/jemalloc/jemalloc/releases/download/${VERSION_JEMALLOC}/jemalloc-${VERSION_JEMALLOC}.tar.bz2 | tar xjC ${DEPS}/jemalloc --strip-components=1
+cd ${DEPS}/jemalloc
+./configure --prefix=${TARGET}
+make build_lib_shared
+make install_lib_shared
 
 mkdir ${DEPS}/zlib-ng
 $CURL https://github.com/zlib-ng/zlib-ng/archive/${VERSION_ZLIB_NG}.tar.gz | tar xzC ${DEPS}/zlib-ng --strip-components=1
@@ -504,6 +513,7 @@ rm -rf ${TARGET}/lib/{pkgconfig,.libs,*.la,cmake}
 
 mkdir ${TARGET}/lib-filtered
 mv ${TARGET}/lib/glib-2.0 ${TARGET}/lib-filtered
+mv ${TARGET}/lib/libjemalloc* ${TARGET}/lib-filtered
 
 # Pack only the relevant libraries
 # Note: we can't use ldd on Linux, since that can only be executed on the target machine
