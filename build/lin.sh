@@ -9,7 +9,7 @@ case ${PLATFORM} in
     TARGET=/target
     PACKAGE=/packaging
     ROOT=/root
-    VIPS_CPP_DEP=libvips-cpp.so.42
+    VIPS_CPP_DEP=libvips-cpp.so.42.$VERSION_VIPS
     ;;
   darwin*)
     DARWIN=true
@@ -17,7 +17,7 @@ case ${PLATFORM} in
     TARGET=$PWD/target
     PACKAGE=$PWD
     ROOT=$PWD/platforms/$PLATFORM
-    VIPS_CPP_DEP=libvips-cpp.42.dylib
+    VIPS_CPP_DEP=libvips-cpp.42.$VERSION_VIPS.dylib
     ;;
 esac
 
@@ -448,7 +448,7 @@ mkdir ${DEPS}/vips
 $CURL https://github.com/libvips/libvips/releases/download/v${VERSION_VIPS}/vips-$(without_prerelease $VERSION_VIPS).tar.xz | tar xJC ${DEPS}/vips --strip-components=1
 cd ${DEPS}/vips
 # Disable HBR support in heifsave
-$CURL https://github.com/libvips/build-win64-mxe/raw/v${VERSION_VIPS}/build/patches/vips-8-heifsave-disable-hbr-support.patch | patch -p1
+$CURL https://github.com/libvips/build-win64-mxe/raw/8.15.4-test-build/build/patches/vips-8-heifsave-disable-hbr-support.patch | patch -p1
 # Link libvips.so.42 statically into libvips-cpp.so.42
 sed -i'.bak' "s/library('vips'/static_&/" libvips/meson.build
 sed -i'.bak' "/version: library_version/{N;d;}" libvips/meson.build

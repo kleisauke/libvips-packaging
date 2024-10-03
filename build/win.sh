@@ -30,7 +30,7 @@ unzip $FILENAME
 
 # Clean and zip
 cd /vips/vips-dev-${VERSION_VIPS_SHORT}
-rm bin/libvips-cpp-42.dll
+rm bin/libvips-cpp-42*.dll
 cp bin/*.dll lib/
 
 # Create platform.json
