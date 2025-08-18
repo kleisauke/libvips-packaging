@@ -288,6 +288,8 @@ $CURL https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/${VERSION_F
 cd ${DEPS}/fontconfig
 # Disable install of gettext files
 sed -i'.bak' "/subdir('its')/d" meson.build
+# Silence FcInit warnings
+sed -i'.bak' "/using without calling FcInit/d" src/fcobjs.c
 meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
   -Dcache-build=disabled -Ddoc=disabled -Dnls=disabled -Dtests=disabled -Dtools=disabled
 meson install -C _build --tag devel
@@ -336,6 +338,8 @@ meson install -C _build --tag devel
 mkdir ${DEPS}/pango
 $CURL https://download.gnome.org/sources/pango/$(without_patch $VERSION_PANGO)/pango-${VERSION_PANGO}.tar.xz | tar xJC ${DEPS}/pango --strip-components=1
 cd ${DEPS}/pango
+# [PATCH] coretext: remove fallback for macOS 10.7 (EOL 2012) and earlier
+$CURL https://gitlab.gnome.org/GNOME/pango/-/merge_requests/878.patch | patch -p1
 # Disable utils and tools
 sed -i'.bak' "/subdir('utils')/{N;d;}" meson.build
 meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
@@ -353,8 +357,6 @@ sed -i'.bak' "/cairo-rs = /s/, \"pdf\", \"ps\"//" {librsvg-c,rsvg}/Cargo.toml
 sed -i'.bak' "/subdir('rsvg_convert')/d" meson.build
 # https://gitlab.gnome.org/GNOME/librsvg/-/merge_requests/1066#note_2356762
 sed -i'.bak' "/^if host_system in \['windows'/s/, 'linux'//" meson.build
-# [PATCH] text: verify pango/fontconfig found a suitable font
-$CURL https://gitlab.gnome.org/GNOME/librsvg/-/merge_requests/1106.patch | patch -p1
 # Regenerate the lockfile after making the above changes
 cargo update --workspace
 # Remove the --static flag from the PKG_CONFIG env since Rust does not
