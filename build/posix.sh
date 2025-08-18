@@ -371,6 +371,8 @@ cd ${DEPS}/vips
 $CURL https://gist.githubusercontent.com/lovell/313a6901e9db1bf285f2a1f1180499e4/raw/3988223c7dfa4d22745d9392034b0117abef1446/libvips-cpp-soversion.patch | patch -p1
 # Disable HBR support in heifsave
 $CURL https://github.com/libvips/build-win64-mxe/raw/v${VERSION_VIPS}/build/patches/vips-8-heifsave-disable-hbr-support.patch | patch -p1
+# [PATCH] Disable unused Highway AVX512 targets
+$CURL https://gist.github.com/kleisauke/e6e45f3a1f1b984511953db2dd380617/raw/libvips-disable-unused-highway-targets.patch | patch -p1
 # Link libvips.so statically into libvips-cpp.so
 sed -i'.bak' "s/library('vips'/static_&/" libvips/meson.build
 sed -i'.bak' "/version: library_version/{N;d;}" libvips/meson.build
