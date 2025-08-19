@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Check latest versions
         run: ./check-latest-versions.sh
   build:
@@ -44,7 +44,7 @@ jobs:
             platform: 'linux-musl-arm64'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       # Reuse the previously built linux-arm Docker image instead of building it from scratch.
       - name: Download previously built Docker image
         id: fetch-docker
