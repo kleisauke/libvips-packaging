@@ -146,7 +146,9 @@ make install-strip
 mkdir ${DEPS}/glib
 $CURL https://download.gnome.org/sources/glib/$(without_patch $VERSION_GLIB)/glib-${VERSION_GLIB}.tar.xz | tar xJC ${DEPS}/glib --strip-components=1
 cd ${DEPS}/glib
-$CURL https://gist.github.com/kleisauke/284d685efa00908da99ea6afbaaf39ae/raw/12773e117bd557b83ba2a7410698db41813c3fda/glib-without-gregex.patch | patch -p1
+$CURL https://gist.github.com/kleisauke/284d685efa00908da99ea6afbaaf39ae/raw/bdad5489a61c217850631571caf57f5db6ea8b2c/glib-without-gregex.patch | patch -p1
+# [PATCH] gio: gmemorymonitorpsi: Replace GRegex with g_str_has_prefix()
+$CURL https://gitlab.gnome.org/GNOME/glib/-/merge_requests/4762.patch | patch -p1
 meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   --force-fallback-for=gvdb -Dintrospection=disabled -Dnls=disabled -Dlibmount=disabled -Dsysprof=disabled -Dlibelf=disabled \
   -Dtests=false -Dglib_assert=false -Dglib_checks=false -Dglib_debug=disabled ${DARWIN:+-Dbsymbolic_functions=false}
@@ -250,6 +252,8 @@ make install-strip noinst_PROGRAMS= dist_doc_DATA=
 mkdir ${DEPS}/hwy
 $CURL https://github.com/google/highway/archive/${VERSION_HWY}.tar.gz | tar xzC ${DEPS}/hwy --strip-components=1
 cd ${DEPS}/hwy
+# [PATCH] workaround for inadvertent SVE codegen on GCC<14
+$CURL https://github.com/google/highway/commit/ad48f2bf298bac247288c8399a5c0e9a40ed8246.patch | patch -p1
 CFLAGS="${CFLAGS} -O3" CXXFLAGS="${CXXFLAGS} -O3" cmake -G"Unix Makefiles" \
   -DCMAKE_TOOLCHAIN_FILE=${ROOT}/Toolchain.cmake -DCMAKE_INSTALL_PREFIX=${TARGET} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release \
   -DBUILD_SHARED_LIBS=FALSE -DBUILD_TESTING=0 -DHWY_ENABLE_CONTRIB=0 -DHWY_ENABLE_EXAMPLES=0 -DHWY_ENABLE_TESTS=0
@@ -338,8 +342,6 @@ meson install -C _build --tag devel
 mkdir ${DEPS}/pango
 $CURL https://download.gnome.org/sources/pango/$(without_patch $VERSION_PANGO)/pango-${VERSION_PANGO}.tar.xz | tar xJC ${DEPS}/pango --strip-components=1
 cd ${DEPS}/pango
-# [PATCH] coretext: remove fallback for macOS 10.7 (EOL 2012) and earlier
-$CURL https://gitlab.gnome.org/GNOME/pango/-/merge_requests/878.patch | patch -p1
 # Disable utils and tools
 sed -i'.bak' "/subdir('utils')/{N;d;}" meson.build
 meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
@@ -361,7 +363,7 @@ sed -i'.bak' "/^if host_system in \['windows'/s/, 'linux'//" meson.build
 cargo update --workspace
 # Remove the --static flag from the PKG_CONFIG env since Rust does not
 # parse that correctly.
-PKG_CONFIG=${PKG_CONFIG/ --static/} meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+PKG_CONFIG=${PKG_CONFIG/ --static/} meson setup _build --default-library=static --buildtype=plain --strip --prefix=${TARGET} ${MESON} \
   -Dintrospection=disabled -Dpixbuf{,-loader}=disabled -Ddocs=disabled -Dvala=disabled -Dtests=false \
   ${RUST_TARGET:+-Dtriplet=$RUST_TARGET}
 meson install -C _build --tag devel
