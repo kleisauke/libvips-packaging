@@ -67,7 +67,7 @@ if [ "$LINUX" = true ]; then
 fi
 
 # The ARMv7 binaries needs to be statically linked against libstdc++, since
-# libstdc++.so.6.0.33 (GLIBCXX_3.4.33) provided by GCC 14.2 isn't available on every OS
+# libstdc++.so.6.0.34 (GLIBCXX_3.4.34) provided by GCC 15.2 isn't available on every OS
 # Note: this is handled in devtoolset in a much better way, see: https://stackoverflow.com/a/19340023
 if [ "$PLATFORM" == "linux-arm" ]; then
   export LDFLAGS+=" -static-libstdc++"

@@ -16,6 +16,9 @@ RUN \
   yum group install -y "Development Tools" && \
   yum install -y --setopt=tsflags=nodocs \
     cmake3 \
+    gcc10 \
+    gcc10-binutils \
+    gcc10-c++ \
     gperf \
     jq \
     openssl-devel \
@@ -26,6 +29,8 @@ RUN \
     texinfo \
     which \
     && \
+  ln -sf /usr/bin/gcc10-ld.bfd /usr/bin/gcc10-ld && \
+  rm /usr/bin/gcc10-ld.gold && \
   curl https://sh.rustup.rs -sSf | sh -s -- -y \
     --no-modify-path \
     --profile minimal \
@@ -36,10 +41,10 @@ RUN \
   ln -s /usr/bin/cmake3 /usr/bin/cmake && \
   pip3 install meson ninja tomli
 
-# Download and install crosstool-ng 1.27.0
+# Download and install crosstool-ng 1.28.0
 WORKDIR /crosstool-ng
 RUN \
-  curl -sL https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-1.27.0/crosstool-ng-1.27.0.tar.xz | \
+  curl -sL https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-1.28.0/crosstool-ng-1.28.0.tar.xz | \
     tar xJC /crosstool-ng --strip-components=1 && \
   ./bootstrap && \
   ./configure --prefix=/usr/local && \
@@ -48,7 +53,7 @@ RUN \
   cd .. && \
   rm -rf crosstool-ng
 
-# Build cross-compiler (GCC 14.2.0 - glibc 2.26)
+# Build cross-compiler (GCC 15.2.0 - glibc 2.26)
 WORKDIR /x-tools/build
 
 COPY armv7-linux-gnueabihf.config /x-tools/build/.config
