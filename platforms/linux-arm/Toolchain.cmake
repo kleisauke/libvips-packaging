@@ -8,6 +8,8 @@ set(CMAKE_AR armv7-unknown-linux-gnueabihf-gcc-ar)
 set(CMAKE_STRIP armv7-unknown-linux-gnueabihf-gcc-strip)
 set(CMAKE_RANLIB armv7-unknown-linux-gnueabihf-gcc-ranlib)
 
+set(CMAKE_FIND_ROOT_PATH $ENV{TARGET_SYSROOT})
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
