@@ -51,7 +51,6 @@ RUN \
 # Build cross-compiler (GCC 14.2.0 - glibc 2.26)
 WORKDIR /x-tools/build
 
-COPY patches/ /x-tools/patches/
 COPY armv7-linux-gnueabihf.config /x-tools/build/.config
 
 RUN \
