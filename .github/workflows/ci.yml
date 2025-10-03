@@ -34,9 +34,9 @@ jobs:
           - 'win-x86.net452'
           - 'win-arm64'
         include:
-          - os: macos-13
+          - os: macos-15-intel
             platform: 'osx-x64'
-          - os: macos-14
+          - os: macos-15
             platform: 'osx-arm64'
           - os: ubuntu-24.04-arm
             platform: 'linux-arm64'
