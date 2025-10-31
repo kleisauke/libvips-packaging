@@ -183,6 +183,8 @@ $CURL https://storage.googleapis.com/aom-releases/libaom-${VERSION_AOM}.tar.gz |
 cd ${DEPS}/aom
 # Downgrade minimum required CMake version to 3.13 - https://aomedia.googlesource.com/aom/+/597a35fbc9837e33366a1108631d9c72ee7a49e7
 find . -name 'CMakeLists.txt' -o -name '*.cmake' | xargs sed -i'.bak' "/^cmake_minimum_required/s/3.16/3.13/"
+# [PATCH] cmake: fix nasm detection w/3.0
+$CURL https://github.com/m-ab-s/aom/commit/6d2b7f71b98bfa28e372b1f2d85f137280bdb3de.patch | patch -p1
 mkdir aom_build
 cd aom_build
 AOM_AS_FLAGS="${FLAGS}" cmake -G"Unix Makefiles" \
@@ -356,8 +358,6 @@ cd ${DEPS}/rsvg
 sed -i'.bak' "/image = /s/, \"gif\", \"webp\"//" rsvg/Cargo.toml
 # We build Cairo with `-Dzlib=disabled`, which implicitly disables the PDF/PostScript surface backends
 sed -i'.bak' "/cairo-rs = /s/, \"pdf\", \"ps\"//" {librsvg-c,rsvg}/Cargo.toml
-# Skip build of rsvg-convert
-sed -i'.bak' "/subdir('rsvg_convert')/d" meson.build
 # https://gitlab.gnome.org/GNOME/librsvg/-/merge_requests/1066#note_2356762
 sed -i'.bak' "/^if host_system in \['windows'/s/, 'linux'//" meson.build
 # Regenerate the lockfile after making the above changes
@@ -365,7 +365,7 @@ cargo update --workspace
 # Remove the --static flag from the PKG_CONFIG env since Rust does not
 # parse that correctly.
 PKG_CONFIG=${PKG_CONFIG/ --static/} meson setup _build --default-library=static --buildtype=plain --strip --prefix=${TARGET} ${MESON} \
-  -Dintrospection=disabled -Dpixbuf{,-loader}=disabled -Ddocs=disabled -Dvala=disabled -Dtests=false \
+  -Dintrospection=disabled -Dpixbuf{,-loader}=disabled -Drsvg-convert=disabled -Ddocs=disabled -Dvala=disabled -Dtests=false \
   ${RUST_TARGET:+-Dtriplet=$RUST_TARGET}
 meson install -C _build --tag devel
 
