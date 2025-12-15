@@ -136,7 +136,7 @@ $CURL https://github.com/zlib-ng/zlib-ng/archive/${VERSION_ZLIB_NG}.tar.gz | tar
 cd ${DEPS}/zlib-ng
 CFLAGS="${CFLAGS} -O3" cmake -G"Unix Makefiles" \
   -DCMAKE_TOOLCHAIN_FILE=${ROOT}/Toolchain.cmake -DCMAKE_INSTALL_PREFIX=${TARGET} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release \
-  -DBUILD_SHARED_LIBS=FALSE -DZLIB_COMPAT=TRUE -DWITH_ARMV6=FALSE
+  -DBUILD_SHARED_LIBS=FALSE -DBUILD_TESTING=FALSE -DZLIB_COMPAT=TRUE -DWITH_ARMV6=FALSE
 make install/strip
 
 mkdir ${DEPS}/ffi
@@ -175,14 +175,12 @@ mkdir ${DEPS}/lcms
 $CURL https://github.com/mm2/Little-CMS/releases/download/lcms${VERSION_LCMS}/lcms2-${VERSION_LCMS}.tar.gz | tar xzC ${DEPS}/lcms --strip-components=1
 cd ${DEPS}/lcms
 CFLAGS="${CFLAGS} -O3" meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
-  -Dtests=disabled 
+  -Dtests=disabled
 meson install -C _build --tag devel
 
 mkdir ${DEPS}/aom
 $CURL https://storage.googleapis.com/aom-releases/libaom-${VERSION_AOM}.tar.gz | tar xzC ${DEPS}/aom --strip-components=1
 cd ${DEPS}/aom
-# Downgrade minimum required CMake version to 3.13 - https://aomedia.googlesource.com/aom/+/597a35fbc9837e33366a1108631d9c72ee7a49e7
-find . -name 'CMakeLists.txt' -o -name '*.cmake' | xargs sed -i'.bak' "/^cmake_minimum_required/s/3.16/3.13/"
 # [PATCH] cmake: fix nasm detection w/3.0
 $CURL https://github.com/m-ab-s/aom/commit/6d2b7f71b98bfa28e372b1f2d85f137280bdb3de.patch | patch -p1
 mkdir aom_build
@@ -198,8 +196,6 @@ make install/strip
 mkdir ${DEPS}/heif
 $CURL https://github.com/strukturag/libheif/releases/download/v${VERSION_HEIF}/libheif-${VERSION_HEIF}.tar.gz | tar xzC ${DEPS}/heif --strip-components=1
 cd ${DEPS}/heif
-# Downgrade minimum required CMake version to 3.12 - https://github.com/strukturag/libheif/issues/975
-sed -i'.bak' "/^cmake_minimum_required/s/3.16.3/3.12/" CMakeLists.txt
 CFLAGS="${CFLAGS} -O3" CXXFLAGS="${CXXFLAGS} -O3" cmake -G"Unix Makefiles" \
   -DCMAKE_TOOLCHAIN_FILE=${ROOT}/Toolchain.cmake -DCMAKE_INSTALL_PREFIX=${TARGET} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release \
   -DBUILD_SHARED_LIBS=FALSE -DBUILD_TESTING=0 -DENABLE_PLUGIN_LOADING=0 -DWITH_EXAMPLES=0 -DWITH_LIBDE265=0 -DWITH_X265=0
@@ -223,13 +219,6 @@ cd ${DEPS}/png
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
   --disable-tools --without-binconfigs --disable-unversioned-libpng-config
 make install-strip dist_man_MANS=
-
-mkdir ${DEPS}/spng
-$CURL https://github.com/randy408/libspng/archive/v${VERSION_SPNG}.tar.gz | tar xzC ${DEPS}/spng --strip-components=1
-cd ${DEPS}/spng
-CFLAGS="${CFLAGS} -O3 -DSPNG_SSE=4" meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
-  -Dstatic_zlib=true -Dbuild_examples=false
-meson install -C _build --tag devel
 
 mkdir ${DEPS}/imagequant
 $CURL https://github.com/lovell/libimagequant/archive/v${VERSION_IMAGEQUANT}.tar.gz | tar xzC ${DEPS}/imagequant --strip-components=1
@@ -323,8 +312,7 @@ mkdir ${DEPS}/pixman
 $CURL https://cairographics.org/releases/pixman-${VERSION_PIXMAN}.tar.gz | tar xzC ${DEPS}/pixman --strip-components=1
 cd ${DEPS}/pixman
 meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
-  -Dlibpng=disabled -Dgtk=disabled -Dopenmp=disabled -Dtests=disabled -Ddemos=disabled \
-  ${WITHOUT_NEON:+-Da64-neon=disabled}
+  -Dlibpng=disabled -Dgtk=disabled -Dopenmp=disabled -Dtests=disabled -Ddemos=disabled
 meson install -C _build --tag devel
 
 mkdir ${DEPS}/cairo
@@ -376,6 +364,22 @@ CFLAGS="${CFLAGS} -O3" meson setup _build --default-library=static --buildtype=r
   -Dexamples=false -Dtests=false
 meson install -C _build --tag devel
 
+mkdir ${DEPS}/uhdr
+$CURL https://github.com/google/libultrahdr/archive/v${VERSION_UHDR}.tar.gz | tar xzC ${DEPS}/uhdr --strip-components=1
+cd ${DEPS}/uhdr
+# [PATCH] improper use of clamp macro
+$CURL https://github.com/google/libultrahdr/commit/5ed39d67cd31d254e84ebf76b03d4b7bcc12e2f7.patch | patch -p1
+# [PATCH] Add ppc64le and s390x to recognized architectures
+$CURL https://github.com/google/libultrahdr/pull/376.patch | patch -p1
+# Avoid architecture-specific compile flags
+sed -i'.bak' '/add_compile_options(-[mf]/d' CMakeLists.txt
+# Ensure install targets are enabled when cross-compiling
+sed -i'.bak' 's/CMAKE_CROSSCOMPILING AND UHDR_ENABLE_INSTALL/FALSE/' CMakeLists.txt
+CFLAGS="${CFLAGS} -O3" CXXFLAGS="${CXXFLAGS} -O3" cmake -G"Unix Makefiles" \
+  -DCMAKE_TOOLCHAIN_FILE=${ROOT}/Toolchain.cmake -DCMAKE_INSTALL_PREFIX=${TARGET} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release \
+  -DBUILD_SHARED_LIBS=FALSE -DUHDR_BUILD_EXAMPLES=FALSE -DUHDR_MAX_DIMENSION=65500
+make install/strip
+
 mkdir ${DEPS}/vips
 $CURL https://github.com/libvips/libvips/releases/download/v${VERSION_VIPS}/vips-${VERSION_VIPS}.tar.xz | tar xJC ${DEPS}/vips --strip-components=1
 cd ${DEPS}/vips
@@ -392,9 +396,9 @@ fi
 # Disable building man pages, gettext po files, tools, and (fuzz-)tests
 sed -i'.bak' "/subdir('man')/{N;N;N;N;d;}" meson.build
 CFLAGS="${CFLAGS} -O3" CXXFLAGS="${CXXFLAGS} -O3" meson setup _build --default-library=shared --buildtype=release --strip --prefix=${TARGET} ${MESON} \
-  -Ddeprecated=false -Dexamples=false -Dintrospection=disabled -Dmodules=disabled -Dcfitsio=disabled -Dfftw=disabled -Djpeg-xl=disabled \
-  -Dmagick=disabled -Dmatio=disabled -Dnifti=disabled -Dopenexr=disabled -Dopenjpeg=disabled -Dopenslide=disabled \
-  -Dpdfium=disabled -Dpoppler=disabled -Dquantizr=disabled \
+  -Ddeprecated=false -Dexamples=false -Dauto_features=enabled -Dintrospection=disabled -Dmodules=disabled -Dcfitsio=disabled -Dfftw=disabled \
+  -Djpeg-xl=disabled -Dmagick=disabled -Dmatio=disabled -Dnifti=disabled -Dopenexr=disabled -Dopenjpeg=disabled -Dopenslide=disabled \
+  -Dpdfium=disabled -Dpoppler=disabled -Dquantizr=disabled -Draw=disabled -Dspng=disabled \
   -Dppm=false -Danalyze=false -Dradiance=false \
   ${LINUX:+-Dcpp_link_args="$LDFLAGS -Wl,-Bsymbolic-functions -Wl,--version-script=$DEPS/vips/vips.map $EXCLUDE_LIBS"}
 meson install -C _build --tag runtime,devel
@@ -487,8 +491,8 @@ printf "{\n\
   \"png\": \"${VERSION_PNG}\",\n\
   \"proxy-libintl\": \"${VERSION_PROXY_LIBINTL}\",\n\
   \"rsvg\": \"${VERSION_RSVG}\",\n\
-  \"spng\": \"${VERSION_SPNG}\",\n\
   \"tiff\": \"${VERSION_TIFF}\",\n\
+  \"uhdr\": \"${VERSION_UHDR}\",\n\
   \"vips\": \"${VERSION_VIPS}\",\n\
   \"webp\": \"${VERSION_WEBP}\",\n\
   \"xml2\": \"${VERSION_XML2}\",\n\

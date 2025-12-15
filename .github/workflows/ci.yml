@@ -29,9 +29,9 @@ jobs:
           - 'linux-arm'
           - 'linux-musl-x64'
           - 'win-x64'
-          - 'win-x64.net452'
+          - 'win-x64.net462'
           - 'win-x86'
-          - 'win-x86.net452'
+          - 'win-x86.net462'
           - 'win-arm64'
         include:
           - os: macos-15-intel
