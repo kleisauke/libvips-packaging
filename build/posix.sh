@@ -367,6 +367,8 @@ meson install -C _build --tag devel
 mkdir ${DEPS}/uhdr
 $CURL https://github.com/google/libultrahdr/archive/v${VERSION_UHDR}.tar.gz | tar xzC ${DEPS}/uhdr --strip-components=1
 cd ${DEPS}/uhdr
+# [PATCH] Add missing header for GCC 15
+$CURL https://github.com/google/libultrahdr/commit/5fa99b5271a3c80a13c78062d7adc6310222dd8e.patch | patch -p1
 # [PATCH] improper use of clamp macro
 $CURL https://github.com/google/libultrahdr/commit/5ed39d67cd31d254e84ebf76b03d4b7bcc12e2f7.patch | patch -p1
 # [PATCH] Add ppc64le and s390x to recognized architectures
