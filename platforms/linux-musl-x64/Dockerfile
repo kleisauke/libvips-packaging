@@ -1,7 +1,7 @@
 FROM alpine:3.15
 LABEL maintainer="Kleis Auke Wolthuizen <info@kleisauke.nl>"
 
-# Create Alpine 3.15 (musl 1.2.2) container suitable for building Linux x64 binaries
+# Create Alpine 3.15 (musl 1.2.2) container suitable for building musl-based Linux x64 binaries
 
 # Path settings
 ENV \
@@ -25,6 +25,7 @@ RUN \
     cmake \
     coreutils \
     curl \
+    curl-dev \
     findutils \
     git \
     gperf \

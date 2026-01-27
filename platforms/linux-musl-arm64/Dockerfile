@@ -1,4 +1,4 @@
-FROM alpine:3.15
+FROM --platform=linux/arm64 alpine:3.15
 LABEL maintainer="Kleis Auke Wolthuizen <info@kleisauke.nl>"
 
 # Create Alpine 3.15 (musl 1.2.2) container suitable for building musl-based Linux ARM64v8-A binaries
@@ -25,6 +25,7 @@ RUN \
     cmake \
     coreutils \
     curl \
+    curl-dev \
     findutils \
     git \
     gperf \
