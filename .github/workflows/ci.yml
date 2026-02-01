@@ -1,7 +1,17 @@
 name: CI
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - main
+      - 'temp-*'
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
 permissions: {}
 jobs:
   check-latest-versions:
@@ -10,9 +20,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Check latest versions
-        run: ./check-latest-versions.sh
+        run: ./check-latest-versions.sh && git diff --quiet
   build:
     permissions:
       contents: read
@@ -33,6 +43,7 @@ jobs:
           - 'win-x86'
           - 'win-x86.net462'
           - 'win-arm64'
+          - 'win-arm64.net481'
         include:
           - os: macos-15-intel
             platform: 'osx-x64'
@@ -44,7 +55,7 @@ jobs:
             platform: 'linux-musl-arm64'
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       # Reuse the previously built linux-arm Docker image instead of building it from scratch.
       - name: Download previously built Docker image
         id: fetch-docker
@@ -72,7 +83,7 @@ jobs:
       - name: Build ${{ matrix.platform }}
         run: ./build.sh ${{ matrix.platform }}
       - name: Upload ${{ matrix.platform }} artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: build-${{ matrix.platform }}
           path: libvips-*-${{ matrix.platform }}.tar.gz
@@ -84,7 +95,7 @@ jobs:
         run: docker save vips-dev-${{ matrix.platform }}:latest | gzip > docker-${{ matrix.platform }}.tar.gz
       - name: Upload Docker image as build artifact
         if: matrix.platform == 'linux-arm'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: docker-${{ matrix.platform }}
           path: docker-${{ matrix.platform }}.tar.gz
@@ -96,7 +107,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: build-*
           merge-multiple: true

@@ -9,6 +9,7 @@ CURL="curl --silent --location --retry 3 --retry-max-time 30"
 
 # Check for newer versions
 ALL_AT_VERSION_LATEST=true
+UPDATES=()
 version_latest() {
   VERSION_SELECTOR="stable_versions"
   if [[ "$4" == *"unstable"* ]]; then
@@ -21,7 +22,9 @@ version_latest() {
   fi
   if [ "$VERSION_LATEST" != "$2" ]; then
     ALL_AT_VERSION_LATEST=false
-    echo "$1 version $2 has been superseded by $VERSION_LATEST"
+    VERSION_VAR=$(echo "VERSION_$1" | tr [:lower:] [:upper:])
+    sed -i "s/^$VERSION_VAR=.*/$VERSION_VAR=$VERSION_LATEST/" versions.properties
+    UPDATES+=("$1")
   fi
   sleep 1
 }
@@ -48,10 +51,12 @@ version_latest "png" "$VERSION_PNG" "1705"
 version_latest "proxy-libintl" "$VERSION_PROXY_LIBINTL" "frida/proxy-libintl"
 version_latest "rsvg" "$VERSION_RSVG" "5420" "unstable"
 version_latest "tiff" "$VERSION_TIFF" "1738"
-version_latest "uhdr" "$VERSION_UHDR" "375187"
+#version_latest "uhdr" "$VERSION_UHDR" "375187" # use commit SHA until next tagged release
 version_latest "vips" "$VERSION_VIPS" "5097"
 version_latest "webp" "$VERSION_WEBP" "1761"
 version_latest "xml2" "$VERSION_XML2" "1783"
 version_latest "zlib-ng" "$VERSION_ZLIB_NG" "115592"
 
-if [ "$ALL_AT_VERSION_LATEST" = "false" ]; then exit 1; fi
+if [ "$ALL_AT_VERSION_LATEST" = "false" ]; then
+  echo "Dependency updates: ${UPDATES[*]}"
+fi

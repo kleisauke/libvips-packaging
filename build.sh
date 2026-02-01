@@ -20,6 +20,7 @@ if [ $# -lt 1 ]; then
   echo "- win-x86"
   echo "- win-x86.net462"
   echo "- win-arm64"
+  echo "- win-arm64.net481"
   echo "- osx-x64"
   echo "- osx-arm64"
   echo
@@ -72,7 +73,7 @@ if ! [ -x "$(command -v docker)" ]; then
 fi
 
 # Windows (x64, x86 and arm64)
-for flavour in win-x64 win-x64.net462 win-x86 win-x86.net462 win-arm64; do
+for flavour in win-x64 win-x64.net462 win-x86 win-x86.net462 win-arm64 win-arm64.net481; do
   if [ $PLATFORM = "all" ] || [ $PLATFORM = $flavour ]; then
     echo "Building $flavour..."
     docker build --pull -t vips-dev-win32 platforms/win32

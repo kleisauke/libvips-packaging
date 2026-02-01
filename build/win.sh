@@ -27,6 +27,10 @@ case "${PLATFORM#*-}" in
     VARIANT=static-ffi
     ;;
   arm64) ARCH=arm64 ;;
+  arm64.net481)
+    ARCH=arm64
+    VARIANT=static-ffi
+    ;;
 esac
 
 FILENAME="vips-dev-${ARCH}-web-${VERSION_VIPS}-${VARIANT}.zip"
