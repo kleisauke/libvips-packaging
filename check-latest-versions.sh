@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+## Copyright 2017 Lovell Fuller and others.
+## SPDX-License-Identifier: Apache-2.0
+
 # Dependency version numbers
 source ./versions.properties
 
@@ -20,9 +23,9 @@ version_latest() {
   else
     VERSION_LATEST=$($CURL "https://release-monitoring.org/api/v2/versions/?project_id=$3" | jq -j ".$VERSION_SELECTOR[0]" | tr '_' '.')
   fi
-  if [ "$VERSION_LATEST" != "$2" ]; then
+  if [ "$VERSION_LATEST" != "" ] && [ "$VERSION_LATEST" != "$2" ]; then
     ALL_AT_VERSION_LATEST=false
-    VERSION_VAR=$(echo "VERSION_$1" | tr [:lower:] [:upper:])
+    VERSION_VAR=$(echo "VERSION_$1" | tr [:lower:]- [:upper:]_)
     sed -i "s/^$VERSION_VAR=.*/$VERSION_VAR=$VERSION_LATEST/" versions.properties
     UPDATES+=("$1")
   fi
