@@ -19,14 +19,14 @@ cd /vips
 VARIANT=static
 
 case "${PLATFORM#*-}" in
-  x64) ARCH=w64 ;;
+  x64) ARCH=x64 ;;
   x64.net462)
-    ARCH=w64
+    ARCH=x64
     VARIANT=static-ffi
     ;;
-  x86) ARCH=w32 ;;
+  x86) ARCH=x86 ;;
   x86.net462)
-    ARCH=w32
+    ARCH=x86
     VARIANT=static-ffi
     ;;
   arm64) ARCH=arm64 ;;
