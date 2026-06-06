@@ -1,4 +1,4 @@
-FROM --platform=linux/arm64 rockylinux:8
+FROM --platform=linux/arm64/v8 rockylinux/rockylinux:8-ubi-init
 LABEL maintainer="Kleis Auke Wolthuizen <info@kleisauke.nl>"
 
 ## Copyright 2017 Lovell Fuller and others.

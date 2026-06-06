@@ -1,4 +1,4 @@
-FROM rockylinux:8
+FROM rockylinux/rockylinux:8-ubi-init
 LABEL maintainer="Kleis Auke Wolthuizen <info@kleisauke.nl>"
 
 ## Copyright 2017 Lovell Fuller and others.
