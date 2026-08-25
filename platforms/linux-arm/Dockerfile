@@ -57,10 +57,10 @@ RUN \
   cargo install cargo-c --locked && \
   pip3.12 install meson ninja
 
-# Download and install crosstool-ng 1.28.0
+# Download and install crosstool-ng 1.29.0
 WORKDIR /crosstool-ng
 RUN \
-  curl -sL https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-1.28.0/crosstool-ng-1.28.0.tar.xz | \
+  curl -sL https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-1.29.0/crosstool-ng-1.29.0.tar.xz | \
     tar xJC /crosstool-ng --strip-components=1 && \
   ./bootstrap && \
   ./configure --prefix=/usr/local && \
@@ -69,7 +69,7 @@ RUN \
   cd .. && \
   rm -rf crosstool-ng
 
-# Build cross-compiler (GCC 15.2.0 - glibc 2.28)
+# Build cross-compiler (GCC 16.2.0 - glibc 2.28)
 WORKDIR /x-tools/build
 
 COPY armv7-linux-gnueabihf.config /x-tools/build/.config

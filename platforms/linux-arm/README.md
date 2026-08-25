@@ -20,5 +20,5 @@ $category > $option = $value -- $comment
 - Operating System > Target OS = linux
 - Operating System > Version of Linux = 4.18.20 -- RHEL 8 kernel
 - C-library > Version of glibc = 2.28
-- C compiler > Version of GCC = 15.2.0
+- C compiler > Version of GCC = 16.2.0
 - C compiler > C++ = ENABLE
