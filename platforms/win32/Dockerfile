@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM debian:trixie
 LABEL maintainer="Kleis Auke Wolthuizen <info@kleisauke.nl>"
 
 ## Copyright 2017 Lovell Fuller and others.

@@ -19,12 +19,10 @@ jobs:
   check-latest-versions:
     permissions:
       contents: read
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Check latest versions
-        run: ./check-latest-versions.sh && git diff --quiet
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: ./check-latest-versions.sh && git diff --quiet
   build:
     permissions:
       contents: read
@@ -35,7 +33,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-24.04
+          - ubuntu-26.04
         platform:
           - 'linux-x64'
           - 'linux-arm'
@@ -51,13 +49,12 @@ jobs:
             platform: 'osx-x64'
           - os: macos-15
             platform: 'osx-arm64'
-          - os: ubuntu-24.04-arm
+          - os: ubuntu-26.04-arm
             platform: 'linux-arm64'
-          - os: ubuntu-24.04-arm
+          - os: ubuntu-26.04-arm
             platform: 'linux-musl-arm64'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # Reuse the previously built linux-arm Docker image instead of building it from scratch.
       - name: Download previously built Docker image
         id: fetch-docker
@@ -84,8 +81,7 @@ jobs:
           brew install automake nasm
       - name: Build ${{ matrix.platform }}
         run: ./build.sh ${{ matrix.platform }}
-      - name: Upload ${{ matrix.platform }} artifact
-        uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: build-${{ matrix.platform }}
           path: libvips-*-${{ matrix.platform }}.tar.gz
@@ -105,11 +101,10 @@ jobs:
     permissions:
       contents: write
     needs: build
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: build-*
           merge-multiple: true
