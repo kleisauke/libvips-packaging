@@ -55,30 +55,14 @@ jobs:
             platform: 'linux-musl-arm64'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      # Reuse the previously built linux-arm Docker image instead of building it from scratch.
-      - name: Download previously built Docker image
-        id: fetch-docker
-        if: matrix.platform == 'linux-arm'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # Fetching artifacts from another pipeline, or even a different run of the same pipeline,
-        # is currently not well-supported in GitHub Actions. We must use the GitHub REST API to
-        # download the last successful uploaded artifact.
-        run: |
-          gh api repos/:owner/:repo/actions/artifacts \
-            -q 'first(.artifacts[]|select(.name=="docker-${{ matrix.platform }}" and .expired==false)|.archive_download_url)' \
-            | xargs gh api > tmp.zip || exit 0
-          unzip tmp.zip
-          rm tmp.zip
-          echo "docker_file_name=docker-${{ matrix.platform }}.tar.gz" >> $GITHUB_OUTPUT
-      - name: Load relevant image locally
-        if: steps.fetch-docker.outputs.docker_file_name != ''
-        run: docker load -i ${{ steps.fetch-docker.outputs.docker_file_name }} || echo "Could not load Docker image"
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
           pipx install meson
           brew install automake nasm
+      - name: Expose GitHub Runtime for Docker Cache
+        if: matrix.platform == 'linux-arm'
+        uses: crazy-max/ghaction-github-runtime@v4
       - name: Build ${{ matrix.platform }}
         run: ./build.sh ${{ matrix.platform }}
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -88,15 +72,6 @@ jobs:
           compression-level: 0
           retention-days: 1
           if-no-files-found: error
-      - name: Save Docker image
-        if: matrix.platform == 'linux-arm'
-        run: docker save vips-dev-${{ matrix.platform }}:latest | gzip > docker-${{ matrix.platform }}.tar.gz
-      - name: Upload Docker image as build artifact
-        if: matrix.platform == 'linux-arm'
-        uses: actions/upload-artifact@v6
-        with:
-          name: docker-${{ matrix.platform }}
-          path: docker-${{ matrix.platform }}.tar.gz
   release:
     permissions:
       contents: write

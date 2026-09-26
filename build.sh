@@ -84,11 +84,21 @@ for flavour in win-x64 win-x64.net462 win-x86 win-x86.net462 win-arm64 win-arm64
   fi
 done
 
+CACHE_ARGS=()
+
+# Reuse BuildKit cache from previous linux-arm builds in GitHub Actions.
+if [ $PLATFORM = "linux-arm" ] && [ -n "$GITHUB_ACTIONS" ]; then
+  CACHE_ARGS=(
+    --cache-from "type=gha,scope=$PLATFORM"
+    --cache-to "type=gha,scope=$PLATFORM,mode=max"
+  )
+fi
+
 # Linux (x64, ARMv7 and ARM64v8)
 for flavour in linux-x64 linux-arm linux-arm64 linux-musl-x64 linux-musl-arm64; do
   if [ $PLATFORM = "all" ] || [ $PLATFORM = $flavour ]; then
     echo "Building $flavour..."
-    docker build --pull --cache-from vips-dev-$flavour --build-arg BUILDKIT_INLINE_CACHE=1 -t vips-dev-$flavour platforms/$flavour
+    docker build --pull "${CACHE_ARGS[@]}" -t vips-dev-$flavour platforms/$flavour
     docker run --rm -v $PWD:/packaging vips-dev-$flavour sh -c "/packaging/build/posix.sh"
   fi
 done
