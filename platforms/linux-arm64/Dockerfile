@@ -1,7 +1,7 @@
 FROM --platform=linux/arm64/v8 rockylinux/rockylinux:8-ubi-init
-LABEL maintainer="Kleis Auke Wolthuizen <info@kleisauke.nl>"
+LABEL org.opencontainers.image.authors="Kleis Auke Wolthuizen <info@kleisauke.nl>"
 
-## Copyright 2017 Lovell Fuller and others.
+## SPDX-FileCopyrightText: 2017 Lovell Fuller and others
 ## SPDX-License-Identifier: Apache-2.0
 
 # Create Rocky Linux 8 (glibc 2.28) container suitable for building Linux ARM64v8-A binaries

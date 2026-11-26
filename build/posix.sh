@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-## Copyright 2017 Lovell Fuller and others.
+## SPDX-FileCopyrightText: 2017 Lovell Fuller and others
 ## SPDX-License-Identifier: Apache-2.0
 
 # Dependency version numbers
@@ -65,13 +65,16 @@ export LDFLAGS="-L${TARGET}/lib"
 # On Linux, we need to create a relocatable library
 # Note: this is handled for macOS using the `install_name_tool` (see below)
 if [ "$LINUX" = true ]; then
+  if [ "$PLATFORM" = "linux-musl-x64" ]; then
+    export LDFLAGS+=" -Wl,-z,pack-relative-relocs"
+  fi
   export LDFLAGS+=" -Wl,--gc-sections -Wl,-rpath=\$ORIGIN/"
 fi
 
 # The ARMv7 binaries needs to be statically linked against libstdc++, since
 # libstdc++.so.6.0.36 (GLIBCXX_3.4.36) provided by GCC 16.2 isn't available on every OS
 # Note: this is handled in devtoolset in a much better way, see: https://stackoverflow.com/a/19340023
-if [ "$PLATFORM" == "linux-arm" ]; then
+if [ "$PLATFORM" = "linux-arm" ]; then
   export LDFLAGS+=" -static-libstdc++"
 fi
 
@@ -92,6 +95,11 @@ if [ "$LINUX" = true ]; then
 elif [ "$DARWIN" = true ]; then
   export MAKEFLAGS="-j$(sysctl -n hw.logicalcpu)"
 fi
+
+# Ensure reproducible builds
+# https://reproducible-builds.org/docs/source-date-epoch/
+SOURCE_DATE_EPOCH="$(git -c safe.directory=${PACKAGE} -C ${PACKAGE} log -1 --pretty=%ct)" && \
+  export SOURCE_DATE_EPOCH
 
 # Expose target sysroot to CMake
 export TARGET_SYSROOT="${TARGET}"
@@ -123,7 +131,7 @@ if [ "$DARWIN" = true ]; then
   CFLAGS= cargo install cargo-c --locked
 fi
 
-if [ "${PLATFORM%-*}" == "linux-musl" ] || [ "$DARWIN" = true ]; then
+if [ "${PLATFORM%-*}" = "linux-musl" ] || [ "$DARWIN" = true ]; then
   # musl and macOS requires the standalone intl support library of gettext, since it's not provided by libc (like GNU).
   # We use a stub version of gettext instead, since we don't need any of the i18n features.
   mkdir ${DEPS}/proxy-libintl
@@ -200,7 +208,7 @@ CFLAGS="${CFLAGS} -O3" CXXFLAGS="${CXXFLAGS} -O3" cmake -G"Unix Makefiles" \
   -DCMAKE_TOOLCHAIN_FILE=${ROOT}/Toolchain.cmake -DCMAKE_INSTALL_PREFIX=${TARGET} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release \
   -DBUILD_SHARED_LIBS=FALSE -DBUILD_DOCUMENTATION=0 -DBUILD_TESTING=0 -DENABLE_PLUGIN_LOADING=0 -DWITH_EXAMPLES=0 -DWITH_LIBDE265=0 -DWITH_X265=0
 make install/strip
-if [ "$PLATFORM" == "linux-arm" ]; then
+if [ "$PLATFORM" = "linux-arm" ]; then
   # Remove -lstdc++ from Libs.private, it won't work with -static-libstdc++
   sed -i '/^Libs.private:/s/ -lstdc++//' ${TARGET}/lib/pkgconfig/libheif.pc
 fi
@@ -349,8 +357,6 @@ sed -i'.bak' "/cairo-rs = /s/, \"pdf\", \"ps\"//" {librsvg-c,rsvg}/Cargo.toml
 sed -i'.bak' "/^if host_system in \['windows'/s/, 'linux'//" meson.build
 # Regenerate the lockfile after making the above changes
 cargo update --workspace
-# [PATCH] Ensure embedded image memory limits are enforced
-$CURL https://github.com/GNOME/librsvg/commit/9106011db93d701728ac2c9da50c9ab2c1bb5dc6.patch | patch -p1
 # Remove the --static flag from the PKG_CONFIG env since Rust does not
 # parse that correctly.
 PKG_CONFIG=${PKG_CONFIG/ --static/} meson setup _build --default-library=static --buildtype=plain --strip --prefix=${TARGET} ${MESON} \
@@ -452,7 +458,7 @@ if [ "$LINUX" = true ]; then
   # Check that we really use the "new" C++11 ABI
   readelf -Ws ${VIPS_CPP_DEP} | c++filt | grep -qF "::__cxx11::" || (echo "$VIPS_CPP_DEP mistakenly uses the C++03 ABI" && exit 1)
 fi
-if [ "$PLATFORM" == "linux-arm" ]; then
+if [ "$PLATFORM" = "linux-arm" ]; then
   # Check that we really didn't link libstdc++ dynamically
   readelf -Wd ${VIPS_CPP_DEP} | grep -qF libstdc && echo "$VIPS_CPP_DEP is dynamically linked against libstdc++" && exit 1
 fi

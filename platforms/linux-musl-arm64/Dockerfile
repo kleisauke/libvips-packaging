@@ -1,7 +1,7 @@
 FROM --platform=linux/arm64 alpine:3.20
-LABEL maintainer="Kleis Auke Wolthuizen <info@kleisauke.nl>"
+LABEL org.opencontainers.image.authors="Kleis Auke Wolthuizen <info@kleisauke.nl>"
 
-## Copyright 2017 Lovell Fuller and others.
+## SPDX-FileCopyrightText: 2017 Lovell Fuller and others
 ## SPDX-License-Identifier: Apache-2.0
 
 # Create Alpine 3.20 (musl 1.2.5) container suitable for building musl-based Linux ARM64v8-A binaries
@@ -12,8 +12,8 @@ ENV \
   CARGO_HOME="/usr/local/cargo" \
   PATH="/usr/local/cargo/bin:/root/.local/bin:$PATH"
 
-# Musl defaults to static libs but we need them to be dynamic for host toolchain.
-# The toolchain will produce static libs by default.
+# musl targets should dynamically link libc by default
+# https://github.com/rust-lang/rust/issues/59302
 ENV \
   RUSTFLAGS="-Ctarget-feature=-crt-static"
 
@@ -55,7 +55,7 @@ ENV \
   PKG_CONFIG="pkg-config --static" \
   PLATFORM="linux-musl-arm64" \
   FLAGS="-march=armv8-a" \
-  RUSTFLAGS="-Zlocation-detail=none -Zfmt-debug=none" \
+  RUSTFLAGS="$RUSTFLAGS -Zlocation-detail=none -Zfmt-debug=none" \
   MESON="--cross-file=/root/meson.ini"
 
 COPY Toolchain.cmake /root/
