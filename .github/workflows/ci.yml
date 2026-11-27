@@ -90,6 +90,7 @@ jobs:
           merge-multiple: true
       - name: Create GitHub release for tag
         env:
+          GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create \
